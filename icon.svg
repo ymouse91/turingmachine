@@ -1,11 +1,11 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Turing Challenge">
   <rect width="512" height="512" rx="96" fill="#f4f1ea"/>
-  <path d="M98 336h316v46H98z" fill="#1f2f46"/>
-  <path d="M98 130h316v46H98z" fill="#c63f2d"/>
+  <path d="M98 336h316v46H98z" fill="#e46f2a"/>
+  <path d="M98 130h316v46H98z" fill="#e46f2a"/>
   <circle cx="164" cy="256" r="54" fill="#2fae5e"/>
   <circle cx="256" cy="256" r="54" fill="#54aad0"/>
   <circle cx="348" cy="256" r="54" fill="#7c64a4"/>
   <path d="M164 219l37 37-37 37-37-37z" fill="#f4f1ea"/>
   <path d="M245 216h22v80h-22zM216 245h80v22h-80z" fill="#f4f1ea"/>
-  <path d="M329 218h42l-66 76h-42z" fill="#f4f1ea"/>
+  <path d="M360 218h42l-66 76h-42z" fill="#f4f1ea"/>
 </svg>
