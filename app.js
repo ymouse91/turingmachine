@@ -9,9 +9,23 @@ const SYMBOL_LABELS = {
 };
 
 const DIFFICULTIES = {
-  EASY: { label: "Easy", level: 1, maxVerifier: 17 },
-  STANDARD: { label: "Standard", level: 2, maxVerifier: 22 },
-  HARD: { label: "Hard", level: 3, maxVerifier: 48 }
+  EASY: { label: "Helppo", level: 1, maxVerifier: 17 },
+  STANDARD: { label: "Normaali", level: 2, maxVerifier: 22 },
+  HARD: { label: "Vaikea", level: 3, maxVerifier: 48 }
+};
+
+const COLOR_NAMES = {
+  blue: "sininen",
+  yellow: "keltainen",
+  purple: "violetti"
+};
+
+const COMPARE_WORDS = {
+  lt: "on pienempi kuin",
+  eq: "on sama kuin",
+  gt: "on suurempi kuin",
+  le: "on pienin tai jaettu pienin",
+  ge: "on suurin tai jaettu suurin"
 };
 
 const CHECK_CARDS = {
@@ -188,7 +202,9 @@ const els = {
   count: document.querySelector("#verifier-count"),
   decrease: document.querySelector("#decrease-verifiers"),
   increase: document.querySelector("#increase-verifiers"),
-  include: document.querySelector("#include-verifiers"),
+  verifierSelect: document.querySelector("#verifier-select"),
+  addVerifier: document.querySelector("#add-verifier"),
+  forcedVerifiers: document.querySelector("#forced-verifiers"),
   title: document.querySelector("#challenge-title"),
   symbolBadge: document.querySelector("#symbol-badge"),
   list: document.querySelector("#verifier-list"),
@@ -200,6 +216,7 @@ const els = {
 };
 
 let currentGame = null;
+let forcedVerifiers = [];
 
 function predicateFor(name) {
   const rule = name.replace(/^v\d+_/, "");
@@ -303,11 +320,11 @@ function generateGame(nbVerif, difficultyName, includeVerifiers = []) {
   const baseVerifiers = [...new Set(includeVerifiers)].sort((a, b) => a - b);
 
   if (baseVerifiers.some((verifier) => verifier < 1 || verifier > difficulty.maxVerifier)) {
-    throw new Error(`${difficulty.label}-tasolla verifioijat ovat välillä 1-${difficulty.maxVerifier}.`);
+    throw new Error(`${difficulty.label}-tasolla tarkistimet ovat välillä 1-${difficulty.maxVerifier}.`);
   }
 
   if (baseVerifiers.length > nbVerif) {
-    throw new Error("Pakotettuja verifioijia on enemmän kuin valittu määrä.");
+    throw new Error("Pakotettuja tarkistimia on enemmän kuin valittu määrä.");
   }
 
   for (let tries = 1; tries <= 10000; tries += 1) {
@@ -401,34 +418,26 @@ function randomInt(min, max) {
   return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
-function parseIncludedVerifiers(value) {
-  if (!value.trim()) return [];
-  const numbers = value
-    .split(/[,\s]+/)
-    .filter(Boolean)
-    .map((part) => Number(part));
-
-  if (numbers.some((number) => !Number.isInteger(number))) {
-    throw new Error("Käytä verifioijanumeroita väliltä 1-48.");
-  }
-  return numbers;
-}
-
 function renderGame(game, difficultyName) {
   currentGame = game;
   const symbol = SYMBOLS[randomInt(0, SYMBOLS.length - 1)];
   els.title.textContent = `${DIFFICULTIES[difficultyName].label} / ${game.verifiers.length}`;
   els.symbolBadge.className = `symbol-badge ${symbol}`;
   els.symbolBadge.textContent = SYMBOL_LABELS[symbol];
-  els.list.replaceChildren(...game.verifiers.map((verifier, index) => renderVerifierCard(verifier, game.criteria[index], symbol)));
+  els.list.dataset.count = String(game.verifiers.length);
+  els.list.replaceChildren(...game.verifiers.map((verifier, index) => renderVerifierCard(verifier, game.criteria[index], symbol, index)));
   els.solutionPanel.hidden = true;
   els.showSolution.disabled = false;
   els.status.textContent = `Löytyi ${game.tries} yrityksellä.`;
 }
 
-function renderVerifierCard(verifier, criterion, symbol) {
+function renderVerifierCard(verifier, criterion, symbol, index) {
   const item = document.createElement("li");
   item.className = "verifier-card";
+  item.dataset.symbol = symbol;
+  item.tabIndex = 0;
+  item.role = "button";
+  item.setAttribute("aria-label", `Näytä tarkistimen ${String.fromCharCode(65 + index)} vaihtoehdot`);
 
   const verifierNumber = document.createElement("span");
   verifierNumber.className = "verifier-number";
@@ -447,7 +456,118 @@ function renderVerifierCard(verifier, criterion, symbol) {
 
   checkRow.append(checkNumber, checkSymbol);
   item.append(verifierNumber, checkRow);
+  item.addEventListener("click", () => showCriterion(verifier, criterion, index));
+  item.addEventListener("keydown", (event) => {
+    if (event.key === "Enter" || event.key === " ") {
+      event.preventDefault();
+      showCriterion(verifier, criterion, index);
+    }
+  });
   return item;
+}
+
+function showCriterion(verifier, criterion, index) {
+  const letter = String.fromCharCode(65 + index);
+  els.status.replaceChildren(
+    document.createTextNode(`${letter} / Tarkistin ${verifier}: `),
+    ...PARSED_VERIFIERS[verifier].flatMap((item, optionIndex) => {
+      const parts = renderCriterionDescription(describeCriterion(item.name));
+      return optionIndex === 0 ? parts : [document.createTextNode(" | "), ...parts];
+    })
+  );
+}
+
+function describeCriterion(name) {
+  const rule = name.replace(/^v\d+_/, "");
+
+  const staticDescriptions = {
+    ascending: "koodi on nouseva",
+    descending: "koodi on laskeva",
+    no_order: "koodi ei ole nouseva eikä laskeva",
+    sum_even: "summa on parillinen",
+    sum_odd: "summa on pariton",
+    no_repeat: "kaikki numerot ovat eri",
+    one_double: "yksi pari",
+    one_triple: "kolme samaa",
+    no_twin: "ei paria",
+    one_twin: "yksi pari",
+    evens_gt_odds: "parillisia on enemmän kuin parittomia",
+    evens_lt_odds: "parillisia on vähemmän kuin parittomia",
+    no_evens: "ei parillisia numeroita",
+    one_even: "yksi parillinen numero",
+    two_evens: "kaksi parillista numeroa",
+    three_evens: "kolme parillista numeroa",
+    no_consecutive_asc: "ei nousevia peräkkäisiä pareja",
+    two_consecutive_asc: "yksi nouseva peräkkäinen pari",
+    three_consecutive_asc: "kaksi nousevaa peräkkäistä paria",
+    no_consecutive_asc_desc: "ei peräkkäisiä pareja",
+    two_consecutive_asc_desc: "yksi peräkkäinen pari",
+    three_consecutive_asc_desc: "kaksi peräkkäistä paria"
+  };
+  if (staticDescriptions[rule]) return staticDescriptions[rule];
+
+  let match = rule.match(/^sum_(lt|eq|gt)_(\d+)$/);
+  if (match) return `summa ${shortCompare(match[1])} ${match[2]}`;
+
+  match = rule.match(/^sum_is_multiple_of_(\d+)$/);
+  if (match) return `summa on jaollinen ${match[1]}:lla`;
+
+  match = rule.match(/^(blue|yellow|purple)_plus_(blue|yellow|purple)_(lt|eq|gt)_(\d+)$/);
+  if (match) return `${colorName(match[1])} + ${colorName(match[2])} ${shortCompare(match[3])} ${match[4]}`;
+
+  match = rule.match(/^(blue|yellow|purple)_(even|odd)$/);
+  if (match) return `${colorName(match[1])} on ${match[2] === "even" ? "parillinen" : "pariton"}`;
+
+  match = rule.match(/^(blue|yellow|purple)_(lt|eq|gt)_(\d+)$/);
+  if (match) return `${colorName(match[1])} ${shortCompare(match[2])} ${match[3]}`;
+
+  match = rule.match(/^(blue|yellow|purple)_(lt|eq|gt)_(blue|yellow|purple)$/);
+  if (match) return `${colorName(match[1])} ${COMPARE_WORDS[match[2]]} ${colorName(match[3])}`;
+
+  match = rule.match(/^(blue|yellow|purple)_(lt|gt)_(blue|yellow|purple)_(blue|yellow|purple)$/);
+  if (match) return `${colorName(match[1])} on ${match[2] === "lt" ? "pienin" : "suurin"}`;
+
+  match = rule.match(/^(blue|yellow|purple)_(le|ge)_(blue|yellow|purple)_(blue|yellow|purple)$/);
+  if (match) return `${colorName(match[1])} ${COMPARE_WORDS[match[2]]}`;
+
+  match = rule.match(/^(no|one|two|three)_(one|ones|three|threes|four|fours)$/);
+  if (match) {
+    const amount = { no: "ei yhtään", one: "yksi", two: "kaksi", three: "kolme" }[match[1]];
+    const digit = { one: "1", ones: "1", three: "3", threes: "3", four: "4", fours: "4" }[match[2]];
+    return `${amount} numeroa ${digit}`;
+  }
+
+  return rule.replaceAll("_", " ");
+}
+
+function colorName(color) {
+  return COLOR_NAMES[color] || color;
+}
+
+function shortCompare(op) {
+  return { lt: "<", eq: "=", gt: ">" }[op] || op;
+}
+
+function renderCriterionDescription(description) {
+  return description.split(/(sininen|keltainen|violetti)/g).filter(Boolean).map((part) => {
+    const color = Object.entries(COLOR_NAMES).find(([, label]) => label === part)?.[0];
+    if (!color) return document.createTextNode(part);
+
+    const icon = document.createElement("span");
+    icon.className = `color-token ${color}`;
+    icon.setAttribute("aria-label", part);
+    icon.title = part;
+    return icon;
+  });
+}
+
+function createColorToken(color) {
+  const label = colorName(color);
+  const icon = document.createElement("span");
+  icon.className = `color-token ${color}`;
+  icon.setAttribute("aria-label", label);
+  icon.title = label;
+  return icon;
 }
 
 function revealSolution() {
@@ -460,17 +580,26 @@ function revealSolution() {
   els.solutionCode.replaceChildren(...digits.map(([color, digit]) => {
     const span = document.createElement("span");
     span.className = `code-digit ${color}`;
-    span.textContent = digit;
+    span.append(createColorToken(color), document.createTextNode(String(digit)));
     return span;
   }));
-  els.criteriaList.textContent = currentGame.criteria.map((criterion) => criterion.name).join(" | ");
+  els.criteriaList.replaceChildren(...currentGame.criteria.map((criterion, index) => {
+    const row = document.createElement("span");
+    row.className = "criteria-row";
+    row.append(
+      document.createTextNode(`${String.fromCharCode(65 + index)}: `),
+      ...renderCriterionDescription(describeCriterion(criterion.name))
+    );
+    return row;
+  }));
+  els.status.textContent = "";
   els.solutionPanel.hidden = false;
 }
 
 function setBusy(isBusy) {
   const submit = els.form.querySelector("[type='submit']");
   submit.disabled = isBusy;
-  submit.textContent = isBusy ? "Haetaan..." : "Generoi";
+  submit.textContent = isBusy ? "Haetaan..." : "Luo haaste";
 }
 
 function syncVerifierCount(value) {
@@ -478,12 +607,64 @@ function syncVerifierCount(value) {
   els.range.value = String(next);
   els.count.value = String(next);
   els.count.textContent = String(next);
+  if (forcedVerifiers.length > next) {
+    forcedVerifiers = forcedVerifiers.slice(0, next);
+    updateVerifierSelect();
+  }
+}
+
+function currentDifficultyName() {
+  return els.form.querySelector("[name='difficulty']:checked").value;
+}
+
+function updateVerifierSelect() {
+  const maxVerifier = DIFFICULTIES[currentDifficultyName()].maxVerifier;
+  const selected = Number(els.verifierSelect.value) || 1;
+  els.verifierSelect.replaceChildren(...Array.from({ length: maxVerifier }, (_, index) => {
+    const value = index + 1;
+    const option = document.createElement("option");
+    option.value = String(value);
+    option.textContent = String(value);
+    option.disabled = forcedVerifiers.includes(value);
+    return option;
+  }));
+  els.verifierSelect.value = String(Math.min(selected, maxVerifier));
+  forcedVerifiers = forcedVerifiers.filter((verifier) => verifier <= maxVerifier);
+  renderForcedVerifiers();
+}
+
+function renderForcedVerifiers() {
+  els.forcedVerifiers.replaceChildren(...forcedVerifiers.map((verifier) => {
+    const chip = document.createElement("button");
+    chip.className = "verifier-chip";
+    chip.type = "button";
+    chip.textContent = String(verifier);
+    chip.setAttribute("aria-label", `Poista tarkistin ${verifier}`);
+    chip.addEventListener("click", () => {
+      forcedVerifiers = forcedVerifiers.filter((item) => item !== verifier);
+      updateVerifierSelect();
+    });
+    return chip;
+  }));
+  els.addVerifier.disabled = forcedVerifiers.length >= Number(els.range.value);
+}
+
+function addForcedVerifier() {
+  const verifier = Number(els.verifierSelect.value);
+  if (!Number.isInteger(verifier) || forcedVerifiers.includes(verifier)) return;
+  if (forcedVerifiers.length >= Number(els.range.value)) return;
+  forcedVerifiers = [...forcedVerifiers, verifier].sort((a, b) => a - b);
+  updateVerifierSelect();
 }
 
 els.range.addEventListener("input", () => syncVerifierCount(els.range.value));
 els.decrease.addEventListener("click", () => syncVerifierCount(Number(els.range.value) - 1));
 els.increase.addEventListener("click", () => syncVerifierCount(Number(els.range.value) + 1));
 els.showSolution.addEventListener("click", revealSolution);
+els.addVerifier.addEventListener("click", addForcedVerifier);
+els.form.querySelectorAll("[name='difficulty']").forEach((radio) => {
+  radio.addEventListener("change", updateVerifierSelect);
+});
 
 els.form.addEventListener("submit", (event) => {
   event.preventDefault();
@@ -496,8 +677,7 @@ els.form.addEventListener("submit", (event) => {
       const formData = new FormData(els.form);
       const nbVerif = Number(formData.get("nbVerif"));
       const difficulty = formData.get("difficulty");
-      const includeVerifiers = parseIncludedVerifiers(formData.get("includeVerifiers") || "");
-      renderGame(generateGame(nbVerif, difficulty, includeVerifiers), difficulty);
+      renderGame(generateGame(nbVerif, difficulty, forcedVerifiers), difficulty);
     } catch (error) {
       els.status.textContent = error.message;
       els.showSolution.disabled = true;
@@ -514,3 +694,4 @@ if ("serviceWorker" in navigator) {
 }
 
 syncVerifierCount(4);
+updateVerifierSelect();

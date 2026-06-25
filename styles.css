@@ -45,14 +45,14 @@ button {
 }
 
 .app-shell {
-  width: min(1120px, 100%);
+  width: min(1180px, 100%);
   min-height: 100vh;
   margin: 0 auto;
   padding: max(18px, env(safe-area-inset-top)) max(16px, env(safe-area-inset-right)) max(20px, env(safe-area-inset-bottom)) max(16px, env(safe-area-inset-left));
   display: grid;
-  grid-template-columns: 340px minmax(0, 1fr);
+  grid-template-columns: 300px minmax(0, 1fr);
   gap: 18px;
-  align-items: stretch;
+  align-items: start;
 }
 
 .control-panel,
@@ -71,8 +71,8 @@ button {
 }
 
 .challenge-panel {
-  min-height: calc(100vh - 40px);
-  padding: clamp(18px, 4vw, 34px);
+  min-height: auto;
+  padding: clamp(18px, 3vw, 28px);
   border-radius: 8px;
   display: flex;
   flex-direction: column;
@@ -118,7 +118,7 @@ h1 {
 }
 
 h2 {
-  font-size: clamp(2rem, 7vw, 5.8rem);
+  font-size: clamp(2rem, 4vw, 3.6rem);
 }
 
 .settings {
@@ -231,6 +231,50 @@ legend,
   box-shadow: 0 0 0 3px rgba(53, 127, 163, 0.18);
 }
 
+.forced-picker {
+  min-width: 0;
+}
+
+.select-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 96px;
+  gap: 10px;
+}
+
+#verifier-select {
+  width: 100%;
+  height: 48px;
+  padding: 0 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  color: var(--ink);
+  background: white;
+  font: inherit;
+  font-weight: 750;
+}
+
+.add-button {
+  min-height: 48px;
+}
+
+.chip-list {
+  min-height: 36px;
+  margin-top: 10px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.verifier-chip {
+  min-width: 42px;
+  min-height: 34px;
+  padding: 0 10px;
+  border-radius: 999px;
+  color: white;
+  background: var(--ink);
+  font-weight: 850;
+}
+
 .actions {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -262,15 +306,15 @@ legend,
 }
 
 .symbol-badge {
-  width: 58px;
-  height: 58px;
+  width: 52px;
+  height: 52px;
   display: grid;
   place-items: center;
   border: 2px solid currentColor;
   border-radius: 8px;
   color: var(--blue);
   background: white;
-  font-size: 2.3rem;
+  font-size: 2rem;
   font-weight: 900;
   line-height: 1;
 }
@@ -293,22 +337,38 @@ legend,
 
 .verifier-list {
   width: 100%;
-  margin: clamp(24px, 5vw, 46px) 0 0;
+  max-width: 820px;
+  margin: 24px auto 0 0;
   padding: 0;
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 12px;
   list-style: none;
   counter-reset: verifiers;
 }
 
+.verifier-list[data-count="5"],
+.verifier-list[data-count="6"] {
+  max-width: 960px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
 .verifier-card {
-  min-height: 132px;
+  min-height: 112px;
   padding: 14px;
   border: 1px solid var(--line);
   border-radius: 8px;
   background: white;
   counter-increment: verifiers;
+  cursor: pointer;
+  transition: border-color 120ms ease, transform 120ms ease;
+}
+
+.verifier-card:focus-visible,
+.verifier-card:hover {
+  border-color: var(--blue);
+  outline: 0;
+  transform: translateY(-1px);
 }
 
 .verifier-card::before {
@@ -337,7 +397,7 @@ legend,
 }
 
 .check-card {
-  margin-top: 18px;
+  margin-top: 14px;
   display: flex;
   align-items: baseline;
   justify-content: space-between;
@@ -345,19 +405,39 @@ legend,
 }
 
 .check-number {
-  font-size: clamp(2rem, 8vw, 3.9rem);
+  font-size: clamp(2.4rem, 4.4vw, 3.2rem);
   line-height: 0.9;
   font-weight: 900;
 }
 
 .check-symbol {
-  font-size: 2rem;
+  font-size: 1.7rem;
   font-weight: 900;
 }
 
+.verifier-card[data-symbol="lozenge"] .check-number,
+.verifier-card[data-symbol="lozenge"] .check-symbol {
+  color: var(--green);
+}
+
+.verifier-card[data-symbol="pound"] .check-number,
+.verifier-card[data-symbol="pound"] .check-symbol {
+  color: var(--gold);
+}
+
+.verifier-card[data-symbol="slash"] .check-number,
+.verifier-card[data-symbol="slash"] .check-symbol {
+  color: var(--blue);
+}
+
+.verifier-card[data-symbol="currency"] .check-number,
+.verifier-card[data-symbol="currency"] .check-symbol {
+  color: var(--violet);
+}
+
 .solution-panel {
-  margin-top: auto;
-  padding-top: 24px;
+  margin-top: 24px;
+  padding-top: 0;
 }
 
 .code-display {
@@ -370,11 +450,26 @@ legend,
   width: 58px;
   height: 64px;
   display: grid;
+  grid-template-rows: 16px 1fr;
   place-items: center;
   border-radius: 8px;
   color: white;
-  font-size: 2.4rem;
+  font-size: 2.1rem;
   font-weight: 900;
+}
+
+.code-digit .color-token {
+  margin: 0;
+  transform: scale(0.82);
+}
+
+.code-digit .color-token.blue {
+  border-bottom-color: white;
+}
+
+.code-digit .color-token.yellow,
+.code-digit .color-token.purple {
+  background: white;
 }
 
 .code-digit.blue {
@@ -401,10 +496,40 @@ legend,
   font-size: 0.86rem;
 }
 
+.criteria-row {
+  display: block;
+  margin-top: 4px;
+}
+
 .status-line {
   margin: auto 0 0;
   padding-top: 18px;
   font-size: 0.9rem;
+}
+
+.color-token {
+  display: inline-block;
+  width: 0.92em;
+  height: 0.92em;
+  margin: 0 0.12em;
+  vertical-align: -0.1em;
+}
+
+.color-token.blue {
+  width: 0;
+  height: 0;
+  border-left: 0.52em solid transparent;
+  border-right: 0.52em solid transparent;
+  border-bottom: 0.92em solid var(--blue);
+}
+
+.color-token.yellow {
+  background: var(--gold);
+}
+
+.color-token.purple {
+  border-radius: 50%;
+  background: var(--violet);
 }
 
 @media (max-width: 780px) {
@@ -416,6 +541,15 @@ legend,
 
   .control-panel {
     position: static;
+    padding: 16px;
+  }
+
+  .title-row {
+    margin-bottom: 18px;
+  }
+
+  .settings {
+    gap: 14px;
   }
 
   .challenge-panel {
@@ -431,9 +565,9 @@ legend,
   }
 
   .symbol-badge {
-    width: 48px;
-    height: 48px;
-    font-size: 1.9rem;
+    width: 44px;
+    height: 44px;
+    font-size: 1.65rem;
   }
 
   .verifier-list {
@@ -461,15 +595,36 @@ legend,
   }
 
   .check-card {
-    margin-top: 12px;
+    margin-top: 10px;
+    gap: 6px;
   }
 
   .check-number {
-    font-size: 2.25rem;
+    font-size: 1.82rem;
   }
 
   .check-symbol {
-    font-size: 1.45rem;
+    font-size: 1.05rem;
+  }
+
+  .solution-panel {
+    margin-top: 20px;
+  }
+
+  .code-display {
+    gap: 8px;
+  }
+
+  .code-digit {
+    width: 50px;
+    height: 56px;
+    grid-template-rows: 14px 1fr;
+    font-size: 1.82rem;
+  }
+
+  .criteria-list {
+    font-size: 0.78rem;
+    line-height: 1.35;
   }
 
   .status-line {

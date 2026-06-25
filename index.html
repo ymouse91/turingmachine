@@ -6,12 +6,12 @@
     <meta name="theme-color" content="#f4f1ea">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
-    <meta name="apple-mobile-web-app-title" content="Turing">
-    <title>Turing Challenge</title>
+    <meta name="apple-mobile-web-app-title" content="Turing-haaste">
+    <title>Turing-haaste</title>
     <link rel="manifest" href="manifest.webmanifest">
     <link rel="apple-touch-icon" href="icon.svg">
     <link rel="icon" href="icon.svg" type="image/svg+xml">
-    <link rel="stylesheet" href="styles.css?v=3">
+    <link rel="stylesheet" href="styles.css?v=15">
   </head>
   <body>
     <main class="app-shell">
@@ -20,7 +20,7 @@
           <img class="app-mark" src="icon.svg" alt="">
           <div>
             <p class="eyebrow">Turing Machine</p>
-            <h1 id="app-title">Challenge</h1>
+            <h1 id="app-title">Haaste</h1>
           </div>
         </div>
 
@@ -28,15 +28,15 @@
           <fieldset>
             <legend>Vaikeustaso</legend>
             <div class="segmented" role="radiogroup" aria-label="Vaikeustaso">
-              <label><input type="radio" name="difficulty" value="EASY"><span>Easy</span></label>
-              <label><input type="radio" name="difficulty" value="STANDARD" checked><span>Standard</span></label>
-              <label><input type="radio" name="difficulty" value="HARD"><span>Hard</span></label>
+              <label><input type="radio" name="difficulty" value="EASY"><span>Helppo</span></label>
+              <label><input type="radio" name="difficulty" value="STANDARD" checked><span>Normaali</span></label>
+              <label><input type="radio" name="difficulty" value="HARD"><span>Vaikea</span></label>
             </div>
           </fieldset>
 
           <fieldset>
-            <legend>Verifioijat</legend>
-            <div class="stepper" role="group" aria-label="Verifioijien määrä">
+            <legend>Tarkistimet</legend>
+            <div class="stepper" role="group" aria-label="Tarkistimien määrä">
               <button class="icon-button" type="button" id="decrease-verifiers" aria-label="Vahenna">-</button>
               <output id="verifier-count" for="verifier-range">4</output>
               <button class="icon-button" type="button" id="increase-verifiers" aria-label="Lisää">+</button>
@@ -44,11 +44,17 @@
             </div>
           </fieldset>
 
-          <label class="field-label" for="include-verifiers">Pakota verifioijat</label>
-          <input id="include-verifiers" name="includeVerifiers" inputmode="text" autocomplete="off" placeholder="esim. 12 39">
+          <div class="forced-picker">
+            <label class="field-label" for="verifier-select">Pakota tarkistin</label>
+            <div class="select-row">
+              <select id="verifier-select" aria-label="Valitse pakotettava tarkistin"></select>
+              <button class="secondary-button add-button" type="button" id="add-verifier">Lisää</button>
+            </div>
+            <div class="chip-list" id="forced-verifiers" aria-label="Pakotetut tarkistimet"></div>
+          </div>
 
           <div class="actions">
-            <button class="primary-button" type="submit">Generoi</button>
+            <button class="primary-button" type="submit">Luo haaste</button>
             <button class="secondary-button" type="button" id="show-solution" disabled>Ratkaisu</button>
           </div>
         </form>
@@ -75,6 +81,6 @@
       </section>
     </main>
 
-    <script src="app.js?v=3" defer></script>
+    <script src="app.js?v=15" defer></script>
   </body>
 </html>
