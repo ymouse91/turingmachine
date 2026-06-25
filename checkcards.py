@@ -67,7 +67,7 @@ CHECK_CARDS = {
     65: {"lozenge": 609, "pound": 406, "slash": 611, "currency": 404},  # purple_gt_blue_yellow
     66: {"lozenge": 614, "pound": 402, "slash": 616, "currency": 399},  # blue_lt_purple
     67: {"lozenge": 618, "pound": 395, "slash": 625, "currency": 393},  # two_evens
-    68: {"lozenge": 628, "pound": 391, "slash": 630, "currency": 391},  # blue_eq_4 ?
+    68: {"lozenge": 628, "pound": 391, "slash": 630, "currency": 389},  # blue_eq_4 ?
     69: {"lozenge": 632, "pound": 386, "slash": 634, "currency": 382},  # yellow_gt_purple
     70: {"lozenge": 636, "pound": 379, "slash": 638, "currency": 377},  # blue_le_yellow_purple
     71: {"lozenge": 640, "pound": 374, "slash": 643, "currency": 372},  # evens_gt_odds

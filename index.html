@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="fi">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <meta name="theme-color" content="#f4f1ea">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="Turing">
+    <title>Turing Challenge</title>
+    <link rel="manifest" href="manifest.webmanifest">
+    <link rel="apple-touch-icon" href="icon.svg">
+    <link rel="icon" href="icon.svg" type="image/svg+xml">
+    <link rel="stylesheet" href="styles.css?v=2">
+  </head>
+  <body>
+    <main class="app-shell">
+      <section class="control-panel" aria-labelledby="app-title">
+        <div class="title-row">
+          <img class="app-mark" src="icon.svg" alt="">
+          <div>
+            <p class="eyebrow">Turing Machine</p>
+            <h1 id="app-title">Challenge</h1>
+          </div>
+        </div>
+
+        <form id="challenge-form" class="settings">
+          <fieldset>
+            <legend>Vaikeustaso</legend>
+            <div class="segmented" role="radiogroup" aria-label="Vaikeustaso">
+              <label><input type="radio" name="difficulty" value="EASY"><span>Easy</span></label>
+              <label><input type="radio" name="difficulty" value="STANDARD" checked><span>Standard</span></label>
+              <label><input type="radio" name="difficulty" value="HARD"><span>Hard</span></label>
+            </div>
+          </fieldset>
+
+          <fieldset>
+            <legend>Verifioijat</legend>
+            <div class="stepper" role="group" aria-label="Verifioijien määrä">
+              <button class="icon-button" type="button" id="decrease-verifiers" aria-label="Vahenna">-</button>
+              <output id="verifier-count" for="verifier-range">4</output>
+              <button class="icon-button" type="button" id="increase-verifiers" aria-label="Lisää">+</button>
+              <input id="verifier-range" name="nbVerif" type="range" min="4" max="6" value="4">
+            </div>
+          </fieldset>
+
+          <label class="field-label" for="include-verifiers">Pakota verifioijat</label>
+          <input id="include-verifiers" name="includeVerifiers" inputmode="numeric" autocomplete="off" placeholder="esim. 12 39">
+
+          <div class="actions">
+            <button class="primary-button" type="submit">Generoi</button>
+            <button class="secondary-button" type="button" id="show-solution" disabled>Ratkaisu</button>
+          </div>
+        </form>
+      </section>
+
+      <section class="challenge-panel" aria-live="polite">
+        <div class="challenge-header">
+          <div>
+            <p class="eyebrow">Haaste</p>
+            <h2 id="challenge-title">Valitse taso</h2>
+          </div>
+          <div class="symbol-badge" id="symbol-badge">#</div>
+        </div>
+
+        <ol id="verifier-list" class="verifier-list"></ol>
+
+        <div class="solution-panel" id="solution-panel" hidden>
+          <p class="eyebrow">Ratkaisu</p>
+          <div class="code-display" id="solution-code"></div>
+          <p id="criteria-list" class="criteria-list"></p>
+        </div>
+
+        <p id="status-line" class="status-line">Valmis generoimaan.</p>
+      </section>
+    </main>
+
+    <script src="app.js?v=2" defer></script>
+  </body>
+</html>
