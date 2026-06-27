@@ -497,12 +497,12 @@ function describeCriterion(name) {
     one_even: "yksi parillinen numero",
     two_evens: "kaksi parillista numeroa",
     three_evens: "kolme parillista numeroa",
-    no_consecutive_asc: "ei nousevia peräkkäisiä pareja",
-    two_consecutive_asc: "yksi nouseva peräkkäinen pari",
-    three_consecutive_asc: "kaksi nousevaa peräkkäistä paria",
-    no_consecutive_asc_desc: "ei peräkkäisiä pareja",
-    two_consecutive_asc_desc: "yksi peräkkäinen pari",
-    three_consecutive_asc_desc: "kaksi peräkkäistä paria"
+    no_consecutive_asc: "ei nousevia peräkkäislukuja",
+    two_consecutive_asc: "2 nousevaa peräkkäislukua",
+    three_consecutive_asc: "3 nousevaa peräkkäislukua",
+    no_consecutive_asc_desc: "ei nousevaa tai laskevaa peräkkäislukujonoa",
+    two_consecutive_asc_desc: "2 nousevaa tai laskevaa peräkkäislukua",
+    three_consecutive_asc_desc: "3 nousevaa tai laskevaa peräkkäislukua"
   };
   if (staticDescriptions[rule]) return staticDescriptions[rule];
 
@@ -534,7 +534,8 @@ function describeCriterion(name) {
   if (match) {
     const amount = { no: "ei yhtään", one: "yksi", two: "kaksi", three: "kolme" }[match[1]];
     const digit = { one: "1", ones: "1", three: "3", threes: "3", four: "4", fours: "4" }[match[2]];
-    return `${amount} numeroa ${digit}`;
+    const numberWord = match[1] === "one" ? "numero" : "numeroa";
+    return `${amount} ${numberWord} ${digit}`;
   }
 
   return rule.replaceAll("_", " ");
