@@ -212,7 +212,8 @@ legend,
 }
 
 .board-screen {
-  min-height: calc(100vh - 28px);
+  height: calc(100vh - 28px);
+  min-height: 620px;
   display: grid;
   grid-template-columns: 220px minmax(360px, 1fr) 360px;
   gap: 12px;
@@ -222,6 +223,7 @@ legend,
 .challenge-area,
 .turn-panel {
   min-width: 0;
+  min-height: 0;
   padding: 16px;
 }
 
@@ -290,10 +292,10 @@ legend,
 }
 
 .verifier-grid {
-  margin-top: 14px;
+  margin-top: 12px;
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 10px;
+  gap: 9px;
 }
 
 .verifier-grid[data-count="5"],
@@ -303,7 +305,7 @@ legend,
 
 .verifier-card {
   min-height: 132px;
-  padding: 14px;
+  padding: 12px;
   border: 1px solid var(--line);
   border-radius: 8px;
   background: white;
@@ -311,9 +313,9 @@ legend,
 
 .verifier-label {
   display: inline-grid;
-  width: 34px;
-  height: 34px;
-  margin-right: 8px;
+  width: 30px;
+  height: 30px;
+  margin-right: 7px;
   place-items: center;
   border-radius: 50%;
   color: white;
@@ -323,17 +325,18 @@ legend,
 
 .verifier-number {
   display: inline-grid;
-  min-width: 42px;
-  height: 34px;
+  min-width: 36px;
+  height: 30px;
   place-items: center;
   border-radius: 6px;
   color: white;
   background: var(--ink);
+  font-size: 0.88rem;
   font-weight: 900;
 }
 
 .check-card {
-  margin-top: 14px;
+  margin-top: 10px;
   display: flex;
   align-items: baseline;
   justify-content: space-between;
@@ -341,22 +344,47 @@ legend,
 }
 
 .check-number {
-  font-size: clamp(2.2rem, 4.2vw, 3.4rem);
+  font-size: clamp(2rem, 3.2vw, 2.75rem);
   line-height: 0.9;
   font-weight: 950;
 }
 
 .check-symbol {
-  font-size: 1.55rem;
+  font-size: 1.2rem;
   font-weight: 900;
 }
 
 .criterion-list {
   min-height: 38px;
-  margin: 10px 0 0;
+  margin: 9px 0 0;
   color: var(--muted);
-  font-size: 0.78rem;
-  line-height: 1.25;
+  font-size: 0.72rem;
+  line-height: 1.18;
+}
+
+.criterion-list .color-token {
+  display: inline-block;
+  width: 0.86em;
+  height: 0.86em;
+  margin: 0 0.06em;
+  vertical-align: -0.08em;
+}
+
+.criterion-list .color-token.blue {
+  width: 0;
+  height: 0;
+  border-left: 0.48em solid transparent;
+  border-right: 0.48em solid transparent;
+  border-bottom: 0.86em solid var(--blue);
+}
+
+.criterion-list .color-token.yellow {
+  background: var(--orange);
+}
+
+.criterion-list .color-token.purple {
+  border-radius: 50%;
+  background: var(--violet);
 }
 
 .code-picker {
@@ -367,7 +395,46 @@ legend,
 
 .code-slot {
   min-width: 0;
-  display: block;
+  height: 72px;
+  position: relative;
+  display: grid;
+  place-items: center;
+}
+
+.code-slot::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 50%;
+  z-index: 0;
+  width: 72px;
+  height: 72px;
+  transform: translateX(-50%);
+  background: var(--slot-color);
+}
+
+.code-slot.blue {
+  --slot-color: var(--blue);
+}
+
+.code-slot.blue::before {
+  clip-path: polygon(50% 0, 100% 100%, 0 100%);
+}
+
+.code-slot.yellow {
+  --slot-color: var(--orange);
+}
+
+.code-slot.yellow::before {
+  border-radius: 8px;
+}
+
+.code-slot.purple {
+  --slot-color: var(--violet);
+}
+
+.code-slot.purple::before {
+  border-radius: 50%;
 }
 
 select,
@@ -387,25 +454,18 @@ select {
 }
 
 .code-slot select {
-  height: 62px;
+  position: relative;
+  z-index: 1;
+  width: 72px;
+  height: 100%;
   border: 0;
+  padding: 0;
   color: white;
+  background: transparent;
   text-align: center;
   font-size: 1.8rem;
   font-weight: 950;
   appearance: none;
-}
-
-.code-slot.blue select {
-  background: var(--blue);
-}
-
-.code-slot.yellow select {
-  background: var(--orange);
-}
-
-.code-slot.purple select {
-  background: var(--violet);
 }
 
 .code-slot select:disabled {
@@ -446,7 +506,8 @@ select {
 }
 
 textarea {
-  min-height: 118px;
+  height: clamp(76px, 15vh, 118px);
+  min-height: 76px;
   resize: none;
   padding: 10px;
   line-height: 1.35;
@@ -455,7 +516,8 @@ textarea {
 .log-panel {
   min-height: 0;
   flex: 1 1 auto;
-  overflow: auto;
+  overflow-y: auto;
+  overscroll-behavior: contain;
   border-top: 1px solid var(--line);
   padding-top: 12px;
 }
@@ -495,6 +557,7 @@ textarea {
 
 @media (orientation: portrait), (max-width: 860px) {
   .board-screen {
+    height: auto;
     grid-template-columns: 1fr;
   }
 

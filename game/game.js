@@ -43,18 +43,33 @@ const els = {
   endCopy: document.querySelector("#end-copy")
 };
 
-function createOption(value, label = value) {
+function createOption(value, label = value, selected = false) {
   const option = document.createElement("option");
   option.value = String(value);
   option.textContent = String(label);
+  option.defaultSelected = selected;
+  option.selected = selected;
   return option;
 }
 
 function setupDigitSelects() {
-  const digits = [1, 2, 3, 4, 5].map((digit) => createOption(digit));
+  const digits = [1, 2, 3, 4, 5].map((digit) => createOption(digit, digit, digit === 1));
   els.blueDigit.replaceChildren(...digits.map((option) => option.cloneNode(true)));
   els.yellowDigit.replaceChildren(...digits.map((option) => option.cloneNode(true)));
   els.purpleDigit.replaceChildren(...digits.map((option) => option.cloneNode(true)));
+  resetDigitSelects();
+}
+
+function resetDigitSelects() {
+  [els.blueDigit, els.yellowDigit, els.purpleDigit].forEach((select) => {
+    [...select.options].forEach((option, index) => {
+      option.selected = index === 0;
+      option.defaultSelected = index === 0;
+    });
+    select.selectedIndex = 0;
+    select.value = "1";
+  });
+  setDigitSelectsDisabled(false);
 }
 
 function selectedCode() {
@@ -85,13 +100,15 @@ function startGame(form) {
     tests: [],
     notes: "",
     guesses: 0,
-    revealed: false
+    revealed: false,
+    solved: false
   }));
   state.currentPlayer = 0;
   state.round = 1;
   state.turnProposal = null;
   state.turnVerifiers = [];
   state.finished = false;
+  resetDigitSelects();
 
   els.setupScreen.hidden = true;
   els.boardScreen.hidden = false;
@@ -136,7 +153,10 @@ function renderVerifier(verifier, index) {
 
   const criteria = document.createElement("p");
   criteria.className = "criterion-list";
-  criteria.textContent = core.PARSED_VERIFIERS[verifier].map((item) => core.describeCriterion(item.name)).join(" | ");
+  core.PARSED_VERIFIERS[verifier].forEach((item, optionIndex) => {
+    if (optionIndex > 0) criteria.append(document.createTextNode(" | "));
+    criteria.append(...core.renderCriterionDescription(core.describeCriterion(item.name)));
+  });
 
   card.append(top, check, criteria);
   return card;
@@ -146,11 +166,11 @@ function renderTurn(showDialog = false) {
   const player = currentPlayer();
   state.turnProposal = null;
   state.turnVerifiers = [];
+  resetDigitSelects();
   els.roundTitle.textContent = `Kierros ${state.round}`;
   els.turnTitle.textContent = player.name;
   els.players.replaceChildren(...state.players.map(renderPlayer));
   els.playerNotes.value = player.notes;
-  setDigitSelectsDisabled(false);
   updateVerifierOptions();
   renderLog();
   clearResult();
@@ -171,7 +191,13 @@ function renderPlayer(player, index) {
   name.textContent = player.name;
   const meta = document.createElement("div");
   meta.className = "player-meta";
-  meta.textContent = player.revealed ? "pois pelistä" : `${player.tests.length} testiä, ${player.guesses} arvausta`;
+  if (player.solved) {
+    meta.textContent = `${player.tests.length} testiä, ratkaistu`;
+  } else if (player.revealed) {
+    meta.textContent = "pois pelistä";
+  } else {
+    meta.textContent = `${player.tests.length} testiä, ${player.guesses} arvausta`;
+  }
   text.append(name, meta);
   card.append(text);
   return card;
@@ -274,7 +300,9 @@ function guessCurrentCode() {
   const code = (state.turnProposal || selectedCode()).value;
   currentPlayer().guesses += 1;
   if (code === state.game.code.value) {
+    currentPlayer().solved = true;
     state.finished = true;
+    renderPlayersOnly();
     showEnd(`${currentPlayer().name} ratkaisi koodin ${code}.`, "Ratkaistu");
   } else {
     els.resultBox.className = "result-box no";
@@ -337,5 +365,11 @@ els.newGame.addEventListener("click", () => {
 els.playerNotes.addEventListener("input", () => {
   currentPlayer().notes = els.playerNotes.value;
 });
+
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("./sw.js", { scope: "./" }).catch(() => {});
+  });
+}
 
 setupDigitSelects();

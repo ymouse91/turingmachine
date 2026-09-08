@@ -8,8 +8,10 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta name="apple-mobile-web-app-title" content="Turing-peli">
     <title>Turing-peli</title>
+    <link rel="manifest" href="manifest.webmanifest">
+    <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
     <link rel="icon" href="../icon.svg" type="image/svg+xml">
-    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="styles.css?v=2">
   </head>
   <body>
     <main class="game-shell">
@@ -23,7 +25,7 @@
             </div>
           </div>
 
-          <form id="setup-form" class="setup-form">
+          <form id="setup-form" class="setup-form" autocomplete="off">
             <fieldset>
               <legend>Pelaajat</legend>
               <div class="segmented player-count" role="radiogroup" aria-label="Pelaajien määrä">
@@ -92,13 +94,13 @@
 
           <div class="code-picker" aria-label="Testattava koodi">
             <label class="code-slot blue">
-              <select id="blue-digit" aria-label="Sininen numero"></select>
+              <select id="blue-digit" aria-label="Sininen numero" autocomplete="off"></select>
             </label>
             <label class="code-slot yellow">
-              <select id="yellow-digit" aria-label="Keltainen numero"></select>
+              <select id="yellow-digit" aria-label="Keltainen numero" autocomplete="off"></select>
             </label>
             <label class="code-slot purple">
-              <select id="purple-digit" aria-label="Violetti numero"></select>
+              <select id="purple-digit" aria-label="Violetti numero" autocomplete="off"></select>
             </label>
           </div>
 
@@ -149,6 +151,6 @@
     </dialog>
 
     <script src="../app.js?v=16"></script>
-    <script src="game.js" type="module"></script>
+    <script src="game.js?v=3" type="module"></script>
   </body>
 </html>
