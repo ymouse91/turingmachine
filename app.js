@@ -658,41 +658,58 @@ function addForcedVerifier() {
   updateVerifierSelect();
 }
 
-els.range.addEventListener("input", () => syncVerifierCount(els.range.value));
-els.decrease.addEventListener("click", () => syncVerifierCount(Number(els.range.value) - 1));
-els.increase.addEventListener("click", () => syncVerifierCount(Number(els.range.value) + 1));
-els.showSolution.addEventListener("click", revealSolution);
-els.addVerifier.addEventListener("click", addForcedVerifier);
-els.form.querySelectorAll("[name='difficulty']").forEach((radio) => {
-  radio.addEventListener("change", updateVerifierSelect);
-});
+window.TuringCore = {
+  SYMBOLS,
+  SYMBOL_LABELS,
+  DIFFICULTIES,
+  COLOR_NAMES,
+  CHECK_CARDS,
+  PARSED_VERIFIERS,
+  ALL_CODES,
+  generateGame,
+  describeCriterion,
+  renderCriterionDescription,
+  createColorToken,
+  randomInt
+};
 
-els.form.addEventListener("submit", (event) => {
-  event.preventDefault();
-  setBusy(true);
-  els.status.textContent = "Haetaan haastetta...";
-  els.solutionPanel.hidden = true;
-
-  window.setTimeout(() => {
-    try {
-      const formData = new FormData(els.form);
-      const nbVerif = Number(formData.get("nbVerif"));
-      const difficulty = formData.get("difficulty");
-      renderGame(generateGame(nbVerif, difficulty, forcedVerifiers), difficulty);
-    } catch (error) {
-      els.status.textContent = error.message;
-      els.showSolution.disabled = true;
-    } finally {
-      setBusy(false);
-    }
-  }, 20);
-});
-
-if ("serviceWorker" in navigator) {
-  window.addEventListener("load", () => {
-    navigator.serviceWorker.register("./sw.js").catch(() => {});
+if (els.form) {
+  els.range.addEventListener("input", () => syncVerifierCount(els.range.value));
+  els.decrease.addEventListener("click", () => syncVerifierCount(Number(els.range.value) - 1));
+  els.increase.addEventListener("click", () => syncVerifierCount(Number(els.range.value) + 1));
+  els.showSolution.addEventListener("click", revealSolution);
+  els.addVerifier.addEventListener("click", addForcedVerifier);
+  els.form.querySelectorAll("[name='difficulty']").forEach((radio) => {
+    radio.addEventListener("change", updateVerifierSelect);
   });
-}
 
-syncVerifierCount(4);
-updateVerifierSelect();
+  els.form.addEventListener("submit", (event) => {
+    event.preventDefault();
+    setBusy(true);
+    els.status.textContent = "Haetaan haastetta...";
+    els.solutionPanel.hidden = true;
+
+    window.setTimeout(() => {
+      try {
+        const formData = new FormData(els.form);
+        const nbVerif = Number(formData.get("nbVerif"));
+        const difficulty = formData.get("difficulty");
+        renderGame(generateGame(nbVerif, difficulty, forcedVerifiers), difficulty);
+      } catch (error) {
+        els.status.textContent = error.message;
+        els.showSolution.disabled = true;
+      } finally {
+        setBusy(false);
+      }
+    }, 20);
+  });
+
+  if ("serviceWorker" in navigator) {
+    window.addEventListener("load", () => {
+      navigator.serviceWorker.register("./sw.js").catch(() => {});
+    });
+  }
+
+  syncVerifierCount(4);
+  updateVerifierSelect();
+}
