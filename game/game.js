@@ -57,7 +57,17 @@ function setupDigitSelects() {
   els.blueDigit.replaceChildren(...digits.map((option) => option.cloneNode(true)));
   els.yellowDigit.replaceChildren(...digits.map((option) => option.cloneNode(true)));
   els.purpleDigit.replaceChildren(...digits.map((option) => option.cloneNode(true)));
+  [els.blueDigit, els.yellowDigit, els.purpleDigit].forEach((select) => {
+    select.addEventListener("change", () => syncDigitDisplay(select));
+  });
   resetDigitSelects();
+}
+
+function syncDigitDisplay(select) {
+  const slot = select.parentElement;
+  slot.dataset.digit = select.value;
+  slot.classList.remove("digit-refresh");
+  window.requestAnimationFrame(() => slot.classList.add("digit-refresh"));
 }
 
 function resetDigitSelects() {
@@ -68,6 +78,7 @@ function resetDigitSelects() {
     });
     select.selectedIndex = 0;
     select.value = "1";
+    syncDigitDisplay(select);
   });
   setDigitSelectsDisabled(false);
 }
