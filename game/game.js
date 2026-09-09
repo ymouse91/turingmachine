@@ -65,33 +65,45 @@ function setupDigitSelects() {
 }
 
 function setupDigitMenu(select) {
+  const slot = select.parentElement;
+  const trigger = document.createElement("button");
   const menu = document.createElement("div");
+
+  trigger.type = "button";
+  trigger.className = "digit-trigger";
+  trigger.setAttribute("aria-label", select.getAttribute("aria-label"));
+  trigger.setAttribute("aria-haspopup", "listbox");
+  trigger.setAttribute("aria-expanded", "false");
+  select.tabIndex = -1;
+  select.setAttribute("aria-hidden", "true");
+
   menu.className = "digit-menu";
+  menu.setAttribute("role", "listbox");
   menu.hidden = true;
-  select.parentElement.append(menu);
+  slot.append(trigger, menu);
 
   [1, 2, 3, 4, 5].forEach((digit) => {
     const button = document.createElement("button");
     button.type = "button";
     button.className = "digit-menu-option";
     button.dataset.digit = String(digit);
+    button.setAttribute("role", "option");
     button.textContent = String(digit);
     button.addEventListener("click", () => {
       select.value = String(digit);
       syncDigitDisplay(select);
       closeDigitMenus();
-      select.focus();
+      trigger.focus();
     });
     menu.append(button);
   });
 
-  select.addEventListener("pointerdown", (event) => {
+  trigger.addEventListener("click", () => {
     if (select.disabled) return;
-    event.preventDefault();
     toggleDigitMenu(select);
   });
 
-  select.addEventListener("keydown", (event) => {
+  trigger.addEventListener("keydown", (event) => {
     if (select.disabled) return;
     if (event.key === "Enter" || event.key === " ") {
       event.preventDefault();
@@ -103,16 +115,20 @@ function setupDigitMenu(select) {
 
 function toggleDigitMenu(select) {
   const menu = select.parentElement.querySelector(".digit-menu");
+  const trigger = select.parentElement.querySelector(".digit-trigger");
   const shouldOpen = menu.hidden;
   closeDigitMenus();
   if (!shouldOpen) return;
   updateDigitMenu(select);
   menu.hidden = false;
+  trigger.setAttribute("aria-expanded", "true");
 }
 
 function updateDigitMenu(select) {
   select.parentElement.querySelectorAll(".digit-menu-option").forEach((button) => {
-    button.classList.toggle("selected", button.dataset.digit === select.value);
+    const selected = button.dataset.digit === select.value;
+    button.classList.toggle("selected", selected);
+    button.setAttribute("aria-selected", String(selected));
   });
 }
 
@@ -120,11 +136,19 @@ function closeDigitMenus() {
   document.querySelectorAll(".digit-menu").forEach((menu) => {
     menu.hidden = true;
   });
+  document.querySelectorAll(".digit-trigger").forEach((trigger) => {
+    trigger.setAttribute("aria-expanded", "false");
+  });
 }
 
 function syncDigitDisplay(select) {
   const slot = select.parentElement;
+  const trigger = slot.querySelector(".digit-trigger");
   slot.dataset.digit = select.value;
+  if (trigger) {
+    trigger.dataset.digit = select.value;
+    trigger.setAttribute("aria-label", `${select.getAttribute("aria-label")}, valittu ${select.value}`);
+  }
   slot.classList.remove("digit-refresh");
   window.requestAnimationFrame(() => slot.classList.add("digit-refresh"));
 }
@@ -321,6 +345,7 @@ function setDigitSelectsDisabled(disabled) {
   if (disabled) closeDigitMenus();
   [els.blueDigit, els.yellowDigit, els.purpleDigit].forEach((select) => {
     select.disabled = disabled;
+    select.parentElement.querySelector(".digit-trigger").disabled = disabled;
   });
 }
 

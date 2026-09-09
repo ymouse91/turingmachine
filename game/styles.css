@@ -493,18 +493,7 @@ select {
 }
 
 .code-slot select {
-  position: relative;
-  z-index: 2;
-  width: 72px;
-  height: 100%;
-  border: 0;
-  padding: 0;
-  color: transparent;
-  background: transparent;
-  text-align: center;
-  font-size: 1.8rem;
-  font-weight: 950;
-  appearance: none;
+  display: none;
 }
 
 .code-slot select option {
@@ -512,44 +501,65 @@ select {
   background: white;
 }
 
-.code-slot select:disabled {
+.digit-trigger {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  border: 0;
+  border-radius: 8px;
+  color: transparent;
+  background: transparent;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+
+.digit-trigger:focus-visible {
+  outline: 3px solid rgba(31, 47, 70, 0.36);
+  outline-offset: 5px;
+}
+
+.digit-trigger:disabled {
   cursor: default;
 }
 
 .digit-menu {
   position: absolute;
-  top: 72px;
+  top: 76px;
   left: 50%;
   z-index: 30;
-  width: 72px;
+  width: 56px;
   overflow: hidden;
   transform: translateX(-50%);
-  border: 1px solid #8d949d;
-  border-radius: 0 0 4px 4px;
+  border: 1px solid color-mix(in srgb, var(--slot-color) 55%, #ffffff);
+  border-radius: 8px;
   background: white;
-  box-shadow: 0 8px 18px rgba(31, 47, 70, 0.18);
+  box-shadow: 0 10px 22px rgba(31, 47, 70, 0.22);
 }
 
 .digit-menu-option {
   width: 100%;
-  height: 46px;
+  height: 42px;
   display: grid;
   place-items: center;
   color: var(--ink);
   background: white;
-  font-size: 1.35rem;
+  font-size: 1.28rem;
   font-weight: 900;
+}
+
+.digit-menu-option + .digit-menu-option {
+  border-top: 1px solid #ece5da;
 }
 
 .digit-menu-option:hover,
 .digit-menu-option:focus-visible {
   color: white;
-  background: var(--blue);
+  background: var(--slot-color);
 }
 
 .digit-menu-option.selected {
   color: white;
-  background: #1f75da;
+  background: var(--slot-color);
 }
 
 .test-row,
