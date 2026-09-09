@@ -226,6 +226,10 @@ function renderVerifier(verifier, index) {
   const criterion = state.game.criteria[index];
   const card = document.createElement("article");
   card.className = "verifier-card";
+  card.tabIndex = 0;
+  card.role = "button";
+  card.dataset.verifierIndex = String(index);
+  card.setAttribute("aria-label", `Valitse tarkistin ${String.fromCharCode(65 + index)}`);
 
   const top = document.createElement("div");
   top.className = "verifier-heading";
@@ -251,6 +255,13 @@ function renderVerifier(verifier, index) {
   });
 
   card.append(top, criteria);
+  card.addEventListener("click", () => selectVerifierCard(index));
+  card.addEventListener("keydown", (event) => {
+    if (event.key === "Enter" || event.key === " ") {
+      event.preventDefault();
+      selectVerifierCard(index);
+    }
+  });
   return card;
 }
 
@@ -359,6 +370,27 @@ function updateVerifierOptions() {
     if (next) els.verifierSelect.value = next.value;
   }
   els.runTest.disabled = state.turnVerifiers.length >= 3;
+  updateVerifierCards();
+}
+
+function selectVerifierCard(index) {
+  const option = els.verifierSelect.querySelector(`option[value="${index}"]`);
+  if (!option || option.disabled || els.runTest.disabled || state.finished) return;
+  els.verifierSelect.value = String(index);
+  updateVerifierCards();
+}
+
+function updateVerifierCards() {
+  const selectedIndex = Number(els.verifierSelect.value);
+  els.verifierGrid.querySelectorAll(".verifier-card").forEach((card) => {
+    const index = Number(card.dataset.verifierIndex);
+    const used = state.turnVerifiers.includes(index);
+    const selectable = !used && !els.runTest.disabled && !state.finished;
+    card.classList.toggle("selected", index === selectedIndex && selectable);
+    card.classList.toggle("used", used);
+    card.setAttribute("aria-pressed", String(index === selectedIndex && selectable));
+    card.setAttribute("aria-disabled", String(!selectable));
+  });
 }
 
 function showTurnLimit(replaceText = true) {
@@ -498,6 +530,7 @@ els.setupForm.addEventListener("submit", (event) => {
   startGame(event.currentTarget);
 });
 
+els.verifierSelect.addEventListener("change", updateVerifierCards);
 els.runTest.addEventListener("click", runTest);
 els.passTurn.addEventListener("click", passTurn);
 els.guessCurrent.addEventListener("click", guessCurrentCode);
