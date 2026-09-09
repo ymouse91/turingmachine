@@ -39,6 +39,7 @@ const els = {
   dialogTitle: document.querySelector("#dialog-title"),
   dialogCopy: document.querySelector("#dialog-copy"),
   endDialog: document.querySelector("#end-dialog"),
+  endEyebrow: document.querySelector("#end-eyebrow"),
   endTitle: document.querySelector("#end-title"),
   endCopy: document.querySelector("#end-copy")
 };
@@ -376,16 +377,25 @@ function passTurn() {
   if (state.finished) return;
   currentPlayer().notes = els.playerNotes.value;
   setDigitSelectsDisabled(false);
-  advanceToNextPlayer();
+  const wrappedRound = advanceToNextPlayer();
+  if (wrappedRound && solvedPlayers().length > 0) {
+    finishSolvedRound();
+    return;
+  }
   renderTurn(true);
 }
 
 function advanceToNextPlayer() {
   const previousPlayer = state.currentPlayer;
+  let wrappedRound = false;
   do {
     state.currentPlayer = (state.currentPlayer + 1) % state.players.length;
-    if (state.currentPlayer === 0) state.round += 1;
-  } while (currentPlayer().revealed && state.currentPlayer !== previousPlayer);
+    if (state.currentPlayer === 0) {
+      state.round += 1;
+      wrappedRound = true;
+    }
+  } while (!isActivePlayer(currentPlayer()) && state.currentPlayer !== previousPlayer);
+  return wrappedRound;
 }
 
 function solutionSummary(player) {
@@ -400,15 +410,41 @@ function guessCurrentCode() {
   if (state.finished) return;
   const code = (state.turnProposal || selectedCode()).value;
   const player = currentPlayer();
+  player.notes = els.playerNotes.value;
   player.guesses += 1;
   if (code === state.game.code.value) {
     player.solved = true;
-    state.finished = true;
     renderPlayersOnly();
-    showEnd(solutionSummary(player), "Ratkaistu");
+    if (state.players.length === 1 || activePlayers().length === 0) {
+      finishSolvedRound();
+    } else {
+      state.turnProposal = state.turnProposal || selectedCode();
+      state.turnVerifiers = state.game.verifiers.map((_, index) => index);
+      setDigitSelectsDisabled(true);
+      updateVerifierOptions();
+      els.resultBox.className = "result-box yes";
+      els.resultBox.textContent = `${code} on ratkaisu. Kierros pelataan loppuun.`;
+    }
   } else {
     els.resultBox.className = "result-box no";
-    els.resultBox.textContent = `${code} ei ole ratkaisu.`;
+    if (state.players.length === 1) {
+      state.turnProposal = state.turnProposal || selectedCode();
+      state.turnVerifiers = state.game.verifiers.map((_, index) => index);
+      setDigitSelectsDisabled(true);
+      updateVerifierOptions();
+      els.resultBox.textContent = `${code} ei ole ratkaisu. Vaihda kierrosta.`;
+    } else {
+      player.notes = els.playerNotes.value;
+      player.revealed = true;
+      renderPlayersOnly();
+      if (activePlayers().length === 0 && solvedPlayers().length === 0) {
+        state.finished = true;
+        showEnd(`${player.name}, ${code} ei ollut ratkaisu. Kaikki pelaajat ovat poistuneet pelistä.`, "Peli päättyi");
+      } else {
+        showEnd(`${player.name}, ${code} ei ollut ratkaisu. Pelaaja poistuu pelistä.`, "Väärä arvaus", "Pelaaja poistuu");
+      }
+      return;
+    }
     renderPlayersOnly();
   }
 }
@@ -417,20 +453,44 @@ function revealGame() {
   const player = currentPlayer();
   player.notes = els.playerNotes.value;
   player.revealed = true;
-  showEnd(solutionSummary(player), "Paljastettu");
+  showEnd(solutionSummary(player), "Paljastettu", "Pelaaja poistuu");
   if (activePlayers().length === 0) {
     state.finished = true;
   }
 }
 
-function showEnd(copy, title) {
+function showEnd(copy, title, eyebrow = "Peli päättyi") {
+  els.endEyebrow.textContent = eyebrow;
   els.endTitle.textContent = title;
   els.endCopy.textContent = copy;
   els.endDialog.showModal();
 }
 
+function finishSolvedRound() {
+  const winners = solvedPlayers();
+  const fewestTests = Math.min(...winners.map((player) => player.tests.length));
+  const bestPlayers = winners.filter((player) => player.tests.length === fewestTests);
+  state.finished = true;
+  renderPlayersOnly();
+  showEnd(winnerSummary(bestPlayers, fewestTests), "Ratkaistu");
+}
+
+function winnerSummary(winners, testCount) {
+  const names = winners.map((player) => player.name).join(", ");
+  const suffix = winners.length === 1 ? "voittaa" : "voittavat";
+  return `${solutionSummary(winners[0])} ${names} ${suffix} ${testCount} testillä.`;
+}
+
+function solvedPlayers() {
+  return state.players.filter((player) => player.solved);
+}
+
+function isActivePlayer(player) {
+  return !player.revealed && !player.solved;
+}
+
 function activePlayers() {
-  return state.players.filter((player) => !player.revealed);
+  return state.players.filter(isActivePlayer);
 }
 
 els.setupForm.addEventListener("submit", (event) => {
@@ -443,16 +503,22 @@ els.passTurn.addEventListener("click", passTurn);
 els.guessCurrent.addEventListener("click", guessCurrentCode);
 els.revealGame.addEventListener("click", revealGame);
 els.endDialog.addEventListener("close", () => {
-  if (!state.game || !currentPlayer().revealed) return;
+  if (!state.game || isActivePlayer(currentPlayer())) return;
   if (state.finished) {
     renderPlayersOnly();
     els.runTest.disabled = true;
     setDigitSelectsDisabled(true);
-    els.resultBox.className = "result-box";
-    els.resultBox.textContent = "Kaikki pelaajat ovat poistuneet pelistä.";
+    if (solvedPlayers().length === 0) {
+      els.resultBox.className = "result-box";
+      els.resultBox.textContent = "Kaikki pelaajat ovat poistuneet pelistä.";
+    }
     return;
   }
-  advanceToNextPlayer();
+  const wrappedRound = advanceToNextPlayer();
+  if (wrappedRound && solvedPlayers().length > 0) {
+    finishSolvedRound();
+    return;
+  }
   renderTurn(true);
 });
 els.newGame.addEventListener("click", () => {
