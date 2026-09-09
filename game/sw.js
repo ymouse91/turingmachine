@@ -1,9 +1,9 @@
-const CACHE_NAME = "turing-game-v12";
+const CACHE_NAME = "turing-game-v13";
 const ASSETS = [
   "./",
   "./index.html",
   "./styles.css?v=10",
-  "./game.js?v=10",
+  "./game.js?v=11",
   "./manifest.webmanifest",
   "./icons/apple-touch-icon.png",
   "./icons/icon-192.png",

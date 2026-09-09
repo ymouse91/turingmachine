@@ -363,15 +363,24 @@ function advanceToNextPlayer() {
   } while (currentPlayer().revealed && state.currentPlayer !== previousPlayer);
 }
 
+function solutionSummary(player) {
+  const code = state.game.code.value;
+  const criteria = state.game.criteria.map((criterion, index) => {
+    return `${String.fromCharCode(65 + index)}: ${core.describeCriterion(criterion.name)}`;
+  }).join(" | ");
+  return `${player.name}, koodi oli ${code}. ${criteria}`;
+}
+
 function guessCurrentCode() {
   if (state.finished) return;
   const code = (state.turnProposal || selectedCode()).value;
-  currentPlayer().guesses += 1;
+  const player = currentPlayer();
+  player.guesses += 1;
   if (code === state.game.code.value) {
-    currentPlayer().solved = true;
+    player.solved = true;
     state.finished = true;
     renderPlayersOnly();
-    showEnd(`${currentPlayer().name} ratkaisi koodin ${code}.`, "Ratkaistu");
+    showEnd(solutionSummary(player), "Ratkaistu");
   } else {
     els.resultBox.className = "result-box no";
     els.resultBox.textContent = `${code} ei ole ratkaisu.`;
@@ -381,13 +390,9 @@ function guessCurrentCode() {
 
 function revealGame() {
   const player = currentPlayer();
-  const code = state.game.code.value;
-  const criteria = state.game.criteria.map((criterion, index) => {
-    return `${String.fromCharCode(65 + index)}: ${core.describeCriterion(criterion.name)}`;
-  }).join(" | ");
   player.notes = els.playerNotes.value;
   player.revealed = true;
-  showEnd(`${player.name}, koodi oli ${code}. ${criteria}`, "Paljastettu");
+  showEnd(solutionSummary(player), "Paljastettu");
   if (activePlayers().length === 0) {
     state.finished = true;
   }
