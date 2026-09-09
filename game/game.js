@@ -144,23 +144,20 @@ function renderVerifier(verifier, index) {
   card.className = "verifier-card";
 
   const top = document.createElement("div");
+  top.className = "verifier-heading";
   const letter = document.createElement("span");
   letter.className = "verifier-label";
   letter.textContent = String.fromCharCode(65 + index);
   const number = document.createElement("span");
   number.className = "verifier-number";
   number.textContent = String(verifier);
-  top.append(letter, number);
-
-  const check = document.createElement("div");
-  check.className = "check-card";
   const checkNumber = document.createElement("span");
   checkNumber.className = "check-number";
   checkNumber.textContent = core.CHECK_CARDS[criterion.checkcard][state.symbol];
   const checkSymbol = document.createElement("span");
   checkSymbol.className = "check-symbol";
   checkSymbol.textContent = core.SYMBOL_LABELS[state.symbol];
-  check.append(checkNumber, checkSymbol);
+  top.append(letter, number, checkNumber, checkSymbol);
 
   const criteria = document.createElement("p");
   criteria.className = "criterion-list";
@@ -169,7 +166,7 @@ function renderVerifier(verifier, index) {
     criteria.append(...core.renderCriterionDescription(core.describeCriterion(item.name)));
   });
 
-  card.append(top, check, criteria);
+  card.append(top, criteria);
   return card;
 }
 

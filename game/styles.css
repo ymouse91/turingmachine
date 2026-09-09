@@ -311,11 +311,18 @@ legend,
   background: white;
 }
 
+.verifier-heading {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  min-width: 0;
+}
+
 .verifier-label {
   display: inline-grid;
   width: 30px;
   height: 30px;
-  margin-right: 7px;
+  flex: 0 0 auto;
   place-items: center;
   border-radius: 50%;
   color: white;
@@ -325,41 +332,38 @@ legend,
 
 .verifier-number {
   display: inline-grid;
-  min-width: 36px;
-  height: 30px;
+  min-width: 28px;
+  height: 24px;
+  padding: 0 6px;
   place-items: center;
-  border-radius: 6px;
+  border-radius: 5px;
   color: white;
   background: var(--ink);
-  font-size: 0.88rem;
+  font-size: 0.72rem;
   font-weight: 900;
 }
 
-.check-card {
-  margin-top: 10px;
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 10px;
-}
-
 .check-number {
-  font-size: clamp(2rem, 3.2vw, 2.75rem);
-  line-height: 0.9;
-  font-weight: 950;
+  margin-left: auto;
+  color: var(--ink);
+  font-size: 0.86rem;
+  line-height: 1;
+  font-weight: 900;
 }
 
 .check-symbol {
-  font-size: 1.2rem;
+  color: var(--ink);
+  font-size: 0.86rem;
+  line-height: 1;
   font-weight: 900;
 }
 
 .criterion-list {
   min-height: 38px;
-  margin: 9px 0 0;
+  margin: 12px 0 0;
   color: var(--muted);
-  font-size: 0.72rem;
-  line-height: 1.18;
+  font-size: 0.84rem;
+  line-height: 1.24;
 }
 
 .criterion-list .color-token {
