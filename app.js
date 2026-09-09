@@ -487,7 +487,7 @@ function describeCriterion(name) {
     sum_even: "summa on parillinen",
     sum_odd: "summa on pariton",
     no_repeat: "kaikki numerot ovat eri",
-    one_double: "tasan yksi pari",
+    one_double: "kaksi samaa",
     one_triple: "kolme samaa",
     no_twin: "ei paria",
     one_twin: "tasan yksi pari",
