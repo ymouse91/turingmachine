@@ -59,8 +59,67 @@ function setupDigitSelects() {
   els.purpleDigit.replaceChildren(...digits.map((option) => option.cloneNode(true)));
   [els.blueDigit, els.yellowDigit, els.purpleDigit].forEach((select) => {
     select.addEventListener("change", () => syncDigitDisplay(select));
+    setupDigitMenu(select);
   });
   resetDigitSelects();
+}
+
+function setupDigitMenu(select) {
+  const menu = document.createElement("div");
+  menu.className = "digit-menu";
+  menu.hidden = true;
+  select.parentElement.append(menu);
+
+  [1, 2, 3, 4, 5].forEach((digit) => {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "digit-menu-option";
+    button.dataset.digit = String(digit);
+    button.textContent = String(digit);
+    button.addEventListener("click", () => {
+      select.value = String(digit);
+      syncDigitDisplay(select);
+      closeDigitMenus();
+      select.focus();
+    });
+    menu.append(button);
+  });
+
+  select.addEventListener("pointerdown", (event) => {
+    if (select.disabled) return;
+    event.preventDefault();
+    toggleDigitMenu(select);
+  });
+
+  select.addEventListener("keydown", (event) => {
+    if (select.disabled) return;
+    if (event.key === "Enter" || event.key === " ") {
+      event.preventDefault();
+      toggleDigitMenu(select);
+    }
+    if (event.key === "Escape") closeDigitMenus();
+  });
+}
+
+function toggleDigitMenu(select) {
+  const menu = select.parentElement.querySelector(".digit-menu");
+  const shouldOpen = menu.hidden;
+  closeDigitMenus();
+  if (!shouldOpen) return;
+  updateDigitMenu(select);
+  menu.hidden = false;
+}
+
+function updateDigitMenu(select) {
+  select.parentElement.querySelectorAll(".digit-menu-option").forEach((button) => {
+    button.classList.toggle("selected", button.dataset.digit === select.value);
+  });
+}
+
+function closeDigitMenus() {
+  document.querySelectorAll(".digit-menu").forEach((menu) => {
+    menu.hidden = true;
+  });
 }
 
 function syncDigitDisplay(select) {
@@ -259,6 +318,7 @@ function runTest() {
 }
 
 function setDigitSelectsDisabled(disabled) {
+  if (disabled) closeDigitMenus();
   [els.blueDigit, els.yellowDigit, els.purpleDigit].forEach((select) => {
     select.disabled = disabled;
   });
@@ -372,6 +432,9 @@ els.newGame.addEventListener("click", () => {
 });
 els.playerNotes.addEventListener("input", () => {
   currentPlayer().notes = els.playerNotes.value;
+});
+document.addEventListener("pointerdown", (event) => {
+  if (!event.target.closest(".code-slot")) closeDigitMenus();
 });
 
 if ("serviceWorker" in navigator) {
