@@ -350,7 +350,7 @@ function generateGame(nbVerif, difficultyName, includeVerifiers = []) {
 
     if (code) {
       const solutions = findAllSolutions(verifiers);
-      if (Object.keys(solutions).length !== 1) {
+      if (Object.keys(solutions).length === 1) {
         return { tries, verifiers, criteria, code };
       }
     }
