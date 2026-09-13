@@ -249,10 +249,10 @@ function renderVerifier(verifier, index) {
 
   const criteria = document.createElement("p");
   criteria.className = "criterion-list";
-  core.PARSED_VERIFIERS[verifier].forEach((item, optionIndex) => {
-    if (optionIndex > 0) criteria.append(document.createTextNode(" | "));
-    criteria.append(...core.renderCriterionDescription(core.describeCriterion(item.name)));
-  });
+  criteria.append(
+    document.createTextNode("Vaihtoehtoiset ehdot: "),
+    ...core.renderCriterionOptions(verifier)
+  );
 
   card.append(top, criteria);
   card.addEventListener("click", () => selectVerifierCard(index));

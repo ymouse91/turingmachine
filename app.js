@@ -469,11 +469,8 @@ function renderVerifierCard(verifier, criterion, symbol, index) {
 function showCriterion(verifier, criterion, index) {
   const letter = String.fromCharCode(65 + index);
   els.status.replaceChildren(
-    document.createTextNode(`${letter} / Tarkistin ${verifier}: `),
-    ...PARSED_VERIFIERS[verifier].flatMap((item, optionIndex) => {
-      const parts = renderCriterionDescription(describeCriterion(item.name));
-      return optionIndex === 0 ? parts : [document.createTextNode(" | "), ...parts];
-    })
+    document.createTextNode(`${letter} / Tarkistin ${verifier}, vaihtoehtoiset ehdot: `),
+    ...renderCriterionOptions(verifier)
   );
 }
 
@@ -559,6 +556,13 @@ function renderCriterionDescription(description) {
     icon.setAttribute("aria-label", part);
     icon.title = part;
     return icon;
+  });
+}
+
+function renderCriterionOptions(verifier) {
+  return PARSED_VERIFIERS[verifier].flatMap((item, optionIndex) => {
+    const parts = renderCriterionDescription(describeCriterion(item.name));
+    return optionIndex === 0 ? parts : [document.createTextNode("; "), ...parts];
   });
 }
 
@@ -669,6 +673,7 @@ window.TuringCore = {
   generateGame,
   describeCriterion,
   renderCriterionDescription,
+  renderCriterionOptions,
   createColorToken,
   randomInt
 };
