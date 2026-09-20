@@ -11,7 +11,7 @@
     <link rel="manifest" href="manifest.webmanifest">
     <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
     <link rel="icon" href="../icon.svg" type="image/svg+xml">
-    <link rel="stylesheet" href="styles.css?v=13">
+    <link rel="stylesheet" href="styles.css?v=14">
   </head>
   <body>
     <main class="game-shell">
@@ -78,7 +78,10 @@
               <p class="eyebrow">Haaste</p>
               <h2 id="challenge-title">Valmis</h2>
             </div>
-            <div class="symbol-badge" id="symbol-badge">#</div>
+            <div class="badge-group">
+              <button class="help-badge" id="verifier-help" type="button" aria-label="Näytä tarkastajan selitys">?</button>
+              <div class="symbol-badge" id="symbol-badge">#</div>
+            </div>
           </div>
           <div class="verifier-grid" id="verifier-grid"></div>
         </section>
@@ -150,7 +153,17 @@
       </form>
     </dialog>
 
+    <dialog id="verifier-help-dialog" class="turn-dialog">
+      <form method="dialog">
+        <p class="eyebrow">Tarkastaja</p>
+        <h2>Miten tarkastaja toimii?</h2>
+        <p>Tarkastaja testaa vain yhtä kortin mahdollisista testeistä. Se ei tutki kortin muita testejä eikä välitä siitä, ovatko ne tosia vai epätosia.</p>
+        <p>Tarkastajan käyttämä testi pitää paikkansa oikealle koodille. Vastaus on kyllä, jos sama testi pitää paikkansa myös pelaajan koodille. Muuten vastaus on ei.</p>
+        <button class="primary-button" value="ok">Sulje</button>
+      </form>
+    </dialog>
+
     <script src="../app.js?v=17"></script>
-    <script src="game.js?v=15" type="module"></script>
+    <script src="game.js?v=16" type="module"></script>
   </body>
 </html>

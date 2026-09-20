@@ -38,6 +38,8 @@ const els = {
   turnDialog: document.querySelector("#turn-dialog"),
   dialogTitle: document.querySelector("#dialog-title"),
   dialogCopy: document.querySelector("#dialog-copy"),
+  verifierHelp: document.querySelector("#verifier-help"),
+  verifierHelpDialog: document.querySelector("#verifier-help-dialog"),
   endDialog: document.querySelector("#end-dialog"),
   endEyebrow: document.querySelector("#end-eyebrow"),
   endTitle: document.querySelector("#end-title"),
@@ -250,7 +252,7 @@ function renderVerifier(verifier, index) {
   const criteria = document.createElement("p");
   criteria.className = "criterion-list";
   criteria.append(
-    document.createTextNode("Vaihtoehtoiset ehdot: "),
+    document.createTextNode("Mahdolliset testit: "),
     ...core.renderCriterionOptions(verifier)
   );
 
@@ -535,6 +537,11 @@ els.runTest.addEventListener("click", runTest);
 els.passTurn.addEventListener("click", passTurn);
 els.guessCurrent.addEventListener("click", guessCurrentCode);
 els.revealGame.addEventListener("click", revealGame);
+els.verifierHelp.addEventListener("click", () => {
+  if (typeof els.verifierHelpDialog.showModal === "function") {
+    els.verifierHelpDialog.showModal();
+  }
+});
 els.endDialog.addEventListener("close", () => {
   if (!state.game || isActivePlayer(currentPlayer())) return;
   if (state.finished) {

@@ -108,13 +108,14 @@
 
     <div class="box">
       Jokainen kortin vaihtoehto on yksi mahdollinen kriteeri.
-      Tarkistajalla on niistä vain yksi salainen kriteeri.
+      Tarkistajalla on niistä vain yksi salainen kriteeri, ja se kriteeri on aina tosi salakoodille.
     </div>
 
     <h2>1. Tarkistajalla on yksi kriteeri</h2>
     <p>Kortissa voi näkyä monta vaihtoehtoa, esimerkiksi:</p>
     <p><code>sininen &gt; 1</code> &nbsp; <code>keltainen &gt; 1</code> &nbsp; <code>violetti &gt; 1</code></p>
     <p>Jokainen vaihtoehto on oma kriteerinsä. Yksi niistä on tarkistajan salainen kriteeri.</p>
+    <p>Salainen kriteeri ei ole pelkkä testi, vaan se on fakta salakoodista. Jos salainen kriteeri on <code>keltainen &gt; 1</code>, salakoodin keltainen numero on varmasti 2, 3, 4 tai 5.</p>
     <p>Pelaajan tehtävä on päätellä testeillä, mikä kriteeri tarkistajalla on.</p>
 
     <h2>Miksi kortissa näkyy monta vaihtoehtoa?</h2>
@@ -131,17 +132,16 @@
     </ul>
     <p>Vain yksi ovi on oikea. Testien avulla yrität selvittää, mikä ovi se on.</p>
 
-    <h2>2. Sama kriteeri testataan kahdelle koodille</h2>
-    <p>Tarkistin testaa:</p>
+    <h2>2. Sama kriteeri testataan sinun koodillesi</h2>
+    <p>Tarkistin tietää jo, että sen salainen kriteeri pitää paikkansa salakoodille. Kun annat oman koodisi, tarkistin testaa:</p>
     <ul>
-      <li>salakoodin</li>
-      <li>sinun arvaamasi koodin</li>
+      <li>pitääkö sama salainen kriteeri paikkansa myös sinun koodillesi</li>
     </ul>
-    <p>Jos molemmat saavat saman tuloksen, vastaus on <strong>kyllä</strong>. Jos tulokset ovat eri, vastaus on <strong>ei</strong>.</p>
+    <p>Jos pitää, vastaus on <strong>kyllä</strong>. Jos ei pidä, vastaus on <strong>ei</strong>.</p>
 
     <h2>Esimerkki</h2>
     <div class="example">
-      <p>Salakoodi on <code>111</code>.</p>
+      <p>Salakoodi on <code>211</code>.</p>
       <p>Tarkistajan salainen kriteeri on <code>sininen &gt; 1</code>.</p>
     </div>
 
@@ -155,20 +155,20 @@
       </thead>
       <tbody>
         <tr>
-          <td>Salakoodi <code>111</code></td>
-          <td><code>1 &gt; 1</code></td>
-          <td>ei</td>
+          <td>Salakoodi <code>211</code></td>
+          <td><code>2 &gt; 1</code></td>
+          <td>kyllä</td>
         </tr>
         <tr>
-          <td>Arvaus <code>122</code></td>
-          <td><code>1 &gt; 1</code></td>
-          <td>ei</td>
+          <td>Arvaus <code>322</code></td>
+          <td><code>3 &gt; 1</code></td>
+          <td>kyllä</td>
         </tr>
       </tbody>
     </table>
 
-    <p>Koska molempien tulos on sama:</p>
-    <p><strong>ei = ei, joten tarkistin vastaa kyllä.</strong></p>
+    <p>Koska arvaus täyttää salaisen kriteerin:</p>
+    <p><strong>tarkistin vastaa kyllä.</strong></p>
 
     <table>
       <thead>
@@ -180,20 +180,27 @@
       </thead>
       <tbody>
         <tr>
-          <td>Salakoodi <code>111</code></td>
-          <td><code>1 &gt; 1</code></td>
-          <td>ei</td>
-        </tr>
-        <tr>
-          <td>Arvaus <code>211</code></td>
+          <td>Salakoodi <code>211</code></td>
           <td><code>2 &gt; 1</code></td>
           <td>kyllä</td>
+        </tr>
+        <tr>
+          <td>Arvaus <code>122</code></td>
+          <td><code>1 &gt; 1</code></td>
+          <td>ei</td>
         </tr>
       </tbody>
     </table>
 
-    <p>Koska tulokset ovat eri:</p>
-    <p><strong>ei ei ole sama kuin kyllä, joten tarkistin vastaa ei.</strong></p>
+    <p>Koska arvaus ei täytä salaista kriteeriä:</p>
+    <p><strong>tarkistin vastaa ei.</strong></p>
+
+    <h2>Mitä kortti kertoo heti?</h2>
+    <p>Koska tarkistajan salainen kriteeri on aina tosi salakoodille, kortti antaa tietoa jo ennen ensimmäistä testiä.</p>
+    <p>Jos kortissa on esimerkiksi nämä vaihtoehdot:</p>
+    <p><code>sininen = 1</code> &nbsp; <code>keltainen = 1</code> &nbsp; <code>violetti = 1</code></p>
+    <p>niin tiedät heti, että salakoodissa ainakin yksi näistä väitteistä on tosi: sininen on 1, keltainen on 1 tai violetti on 1.</p>
+    <p>Et vielä tiedä, mikä niistä on tarkistajan salainen kriteeri. Useampikin väite voi olla salakoodille tosi, mutta tarkistaja seuraa silti vain yhtä niistä.</p>
 
     <h2>Parillinen/pariton-kortti</h2>
     <p>Vaikeammassa kortissa voi olla kuusi vaihtoehtoa:</p>
@@ -206,14 +213,14 @@
       <li><code>violetti on pariton</code></li>
     </ul>
     <p>Tarkistaja tarkistaa näistä vain yhtä. Jos saat vastauksen <strong>ei</strong>, se ei tarkoita, että ehdotuksesi numerot eivät voisi olla salakoodissa.</p>
-    <p>Se tarkoittaa vain, että ehdotuksesi ei täyttänyt tarkistajan salaista kriteeriä.</p>
+    <p>Se tarkoittaa vain, että ehdotuksesi ei täyttänyt tarkistajan salaista kriteeriä. Koska salakoodi täyttää sen kriteerin, ehdotus eroaa salakoodista juuri tämän tarkistimen seuraamassa asiassa.</p>
     <p>Jos esimerkiksi ehdotuksessa kaikki kolme numeroa ovat parittomia ja vastaus on <strong>ei</strong>, voit päätellä, ettei salainen kriteeri ole mikään näistä: <code>sininen on pariton</code>, <code>keltainen on pariton</code> tai <code>violetti on pariton</code>.</p>
     <p>Silti salakoodissa voi aivan hyvin olla parittomia numeroita. Poistit vain kortin mahdollisia kriteerejä, et numeroita salakoodista.</p>
 
     <h2>Muistisääntö</h2>
     <div class="box">
-      Kyllä = arvaus kuuluu samaan ryhmään kuin salakoodi.<br>
-      Ei = arvaus kuuluu eri ryhmään kuin salakoodi.
+      Kyllä = arvaus täyttää tarkistajan salaisen kriteerin.<br>
+      Ei = arvaus ei täytä tarkistajan salaista kriteeriä.
     </div>
   </main>
 </body>
