@@ -43,8 +43,11 @@ const els = {
   endDialog: document.querySelector("#end-dialog"),
   endEyebrow: document.querySelector("#end-eyebrow"),
   endTitle: document.querySelector("#end-title"),
-  endCopy: document.querySelector("#end-copy")
+  endCopy: document.querySelector("#end-copy"),
+  generationOverlay: document.querySelector("#generation-overlay")
 };
+
+let isGenerating = false;
 
 function createOption(value, label = value, selected = false) {
   const option = document.createElement("option");
@@ -184,33 +187,55 @@ function currentPlayer() {
   return state.players[state.currentPlayer];
 }
 
-function startGame(form) {
+function waitForLoadingPaint() {
+  return new Promise((resolve) => window.setTimeout(resolve, 20));
+}
+
+function setGenerating(nextIsGenerating) {
+  isGenerating = nextIsGenerating;
+  els.generationOverlay.hidden = !nextIsGenerating;
+  els.generationOverlay.setAttribute("aria-hidden", String(!nextIsGenerating));
+  els.setupScreen.setAttribute("aria-busy", String(nextIsGenerating));
+  els.setupForm.querySelectorAll("button, input").forEach((control) => {
+    control.disabled = nextIsGenerating;
+  });
+}
+
+async function startGame(form) {
+  if (isGenerating) return;
   const data = new FormData(form);
   const playerCount = Number(data.get("players"));
   const difficulty = data.get("difficulty");
   const verifierCount = Number(data.get("verifiers"));
 
-  state.game = core.generateGame(verifierCount, difficulty);
-  state.symbol = core.SYMBOLS[core.randomInt(0, core.SYMBOLS.length - 1)];
-  state.players = Array.from({ length: playerCount }, (_, index) => ({
-    name: `Pelaaja ${index + 1}`,
-    tests: [],
-    notes: "",
-    guesses: 0,
-    revealed: false,
-    solved: false
-  }));
-  state.currentPlayer = 0;
-  state.round = 1;
-  state.turnProposal = null;
-  state.turnVerifiers = [];
-  state.finished = false;
-  resetDigitSelects();
+  setGenerating(true);
+  await waitForLoadingPaint();
 
-  els.setupScreen.hidden = true;
-  els.boardScreen.hidden = false;
-  renderStaticChallenge(difficulty);
-  renderTurn(true);
+  try {
+    state.game = core.generateGame(verifierCount, difficulty);
+    state.symbol = core.SYMBOLS[core.randomInt(0, core.SYMBOLS.length - 1)];
+    state.players = Array.from({ length: playerCount }, (_, index) => ({
+      name: `Pelaaja ${index + 1}`,
+      tests: [],
+      notes: "",
+      guesses: 0,
+      revealed: false,
+      solved: false
+    }));
+    state.currentPlayer = 0;
+    state.round = 1;
+    state.turnProposal = null;
+    state.turnVerifiers = [];
+    state.finished = false;
+    resetDigitSelects();
+
+    els.setupScreen.hidden = true;
+    els.boardScreen.hidden = false;
+    renderStaticChallenge(difficulty);
+    renderTurn(true);
+  } finally {
+    setGenerating(false);
+  }
 }
 
 function renderStaticChallenge(difficulty) {
