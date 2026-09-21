@@ -196,7 +196,9 @@ for (let blue = 1; blue <= 5; blue += 1) {
   }
 }
 
-const els = {
+const solutionCache = new Map();
+
+const els = typeof document === "undefined" ? {} : {
   form: document.querySelector("#challenge-form"),
   range: document.querySelector("#verifier-range"),
   count: document.querySelector("#verifier-count"),
@@ -345,18 +347,26 @@ function generateGame(nbVerif, difficultyName, includeVerifiers = []) {
     }
 
     verifiers.sort((a, b) => a - b);
-    const criteria = verifiers.map((verifier) => randomCheckableCriterion(PARSED_VERIFIERS[verifier]));
-    const code = testCriteria(criteria.map((criterion) => criterion.predicate));
+    const solutions = findCachedSolutions(verifiers);
+    const codes = Object.keys(solutions);
 
-    if (code) {
-      const solutions = findAllSolutions(verifiers);
-      if (Object.keys(solutions).length === 1) {
-        return { tries, verifiers, criteria, code };
-      }
+    if (codes.length === 1) {
+      const code = ALL_CODES.find((candidate) => candidate.value === codes[0]);
+      const criteriaOptions = solutions[codes[0]];
+      const criteria = criteriaOptions[randomInt(0, criteriaOptions.length - 1)];
+      return { tries, verifiers, criteria, code };
     }
   }
 
   throw new Error("Sopivaa haastetta ei löytynyt 10000 yrityksellä.");
+}
+
+function findCachedSolutions(verifiers) {
+  const key = verifiers.join(",");
+  if (!solutionCache.has(key)) {
+    solutionCache.set(key, findAllSolutions(verifiers));
+  }
+  return solutionCache.get(key);
 }
 
 function randomCheckableCriterion(criteria) {
@@ -662,7 +672,7 @@ function addForcedVerifier() {
   updateVerifierSelect();
 }
 
-window.TuringCore = {
+globalThis.TuringCore = {
   SYMBOLS,
   SYMBOL_LABELS,
   DIFFICULTIES,

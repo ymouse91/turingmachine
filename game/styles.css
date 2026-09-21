@@ -726,6 +726,13 @@ textarea {
   font-weight: 850;
 }
 
+.generation-error {
+  margin: 0;
+  color: #8b261a;
+  font-weight: 800;
+  line-height: 1.35;
+}
+
 .apple-spinner {
   position: relative;
   width: 42px;

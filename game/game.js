@@ -16,6 +16,7 @@ const state = {
 const els = {
   setupScreen: document.querySelector("#setup-screen"),
   setupForm: document.querySelector("#setup-form"),
+  generationError: document.querySelector("#generation-error"),
   boardScreen: document.querySelector("#board-screen"),
   roundTitle: document.querySelector("#round-title"),
   players: document.querySelector("#players"),
@@ -48,6 +49,8 @@ const els = {
 };
 
 let isGenerating = false;
+let generatorWorker = null;
+let generatorRequestId = 0;
 
 function createOption(value, label = value, selected = false) {
   const option = document.createElement("option");
@@ -191,6 +194,60 @@ function waitForLoadingPaint() {
   return new Promise((resolve) => window.setTimeout(resolve, 20));
 }
 
+function generatorFromWorker(verifierCount, difficulty) {
+  if (!("Worker" in window)) {
+    return Promise.resolve(core.generateGame(verifierCount, difficulty));
+  }
+
+  if (!generatorWorker) {
+    generatorWorker = new Worker("./generator-worker.js?v=1");
+  }
+
+  const id = generatorRequestId + 1;
+  generatorRequestId = id;
+
+  return new Promise((resolve, reject) => {
+    const handleMessage = (event) => {
+      if (event.data.id !== id) return;
+      cleanup();
+
+      if (!event.data.ok) {
+        reject(new Error(event.data.error));
+        return;
+      }
+
+      resolve(hydrateGeneratedGame(event.data.game));
+    };
+
+    const handleError = () => {
+      cleanup();
+      reject(new Error("Tehtävän generointi epäonnistui."));
+    };
+
+    const cleanup = () => {
+      generatorWorker.removeEventListener("message", handleMessage);
+      generatorWorker.removeEventListener("error", handleError);
+    };
+
+    generatorWorker.addEventListener("message", handleMessage);
+    generatorWorker.addEventListener("error", handleError);
+    generatorWorker.postMessage({ id, verifierCount, difficulty });
+  });
+}
+
+function hydrateGeneratedGame(game) {
+  return {
+    ...game,
+    criteria: game.criteria.map((criterion, index) => {
+      const hydratedCriterion = core.PARSED_VERIFIERS[game.verifiers[index]].find((candidate) => {
+        return candidate.name === criterion.name && candidate.checkcard === criterion.checkcard;
+      });
+      if (!hydratedCriterion) throw new Error("Tehtävän tarkistimia ei voitu lukea.");
+      return hydratedCriterion;
+    })
+  };
+}
+
 function setGenerating(nextIsGenerating) {
   isGenerating = nextIsGenerating;
   els.generationOverlay.hidden = !nextIsGenerating;
@@ -208,11 +265,13 @@ async function startGame(form) {
   const difficulty = data.get("difficulty");
   const verifierCount = Number(data.get("verifiers"));
 
+  els.generationError.hidden = true;
+  els.generationError.textContent = "";
   setGenerating(true);
   await waitForLoadingPaint();
 
   try {
-    state.game = core.generateGame(verifierCount, difficulty);
+    state.game = await generatorFromWorker(verifierCount, difficulty);
     state.symbol = core.SYMBOLS[core.randomInt(0, core.SYMBOLS.length - 1)];
     state.players = Array.from({ length: playerCount }, (_, index) => ({
       name: `Pelaaja ${index + 1}`,
@@ -233,6 +292,9 @@ async function startGame(form) {
     els.boardScreen.hidden = false;
     renderStaticChallenge(difficulty);
     renderTurn(true);
+  } catch (error) {
+    els.generationError.textContent = error instanceof Error ? error.message : "Tehtävän generointi epäonnistui.";
+    els.generationError.hidden = false;
   } finally {
     setGenerating(false);
   }
