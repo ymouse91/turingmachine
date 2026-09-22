@@ -307,7 +307,7 @@ function renderStaticChallenge(difficulty) {
   els.verifierGrid.dataset.count = String(state.game.verifiers.length);
   els.verifierGrid.replaceChildren(...state.game.verifiers.map(renderVerifier));
   els.verifierSelect.replaceChildren(...state.game.verifiers.map((verifier, index) => {
-    return createOption(index, `${String.fromCharCode(65 + index)} / Tarkistin ${verifier}`);
+    return createOption(index, `${String.fromCharCode(65 + index)} / Testi ${verifier}`);
   }));
 }
 
@@ -328,6 +328,8 @@ function renderVerifier(verifier, index) {
   const number = document.createElement("span");
   number.className = "verifier-number";
   number.textContent = String(verifier);
+  number.title = `Testi ${verifier}`;
+  number.setAttribute("aria-label", `Testi ${verifier}`);
   const checkNumber = document.createElement("span");
   checkNumber.className = "check-number";
   checkNumber.textContent = core.CHECK_CARDS[criterion.checkcard][state.symbol];
@@ -339,7 +341,7 @@ function renderVerifier(verifier, index) {
   const criteria = document.createElement("p");
   criteria.className = "criterion-list";
   criteria.append(
-    document.createTextNode("Mahdolliset testit: "),
+    document.createTextNode("Mahdolliset ehdot: "),
     ...core.renderCriterionOptions(verifier)
   );
 

@@ -324,11 +324,11 @@ function generateGame(nbVerif, difficultyName, includeVerifiers = []) {
   const baseVerifiers = [...new Set(includeVerifiers)].sort((a, b) => a - b);
 
   if (baseVerifiers.some((verifier) => verifier < 1 || verifier > difficulty.maxVerifier)) {
-    throw new Error(`${difficulty.label}-tasolla tarkistimet ovat välillä 1-${difficulty.maxVerifier}.`);
+    throw new Error(`${difficulty.label}-tasolla testit ovat välillä 1-${difficulty.maxVerifier}.`);
   }
 
   if (baseVerifiers.length > nbVerif) {
-    throw new Error("Pakotettuja tarkistimia on enemmän kuin valittu määrä.");
+    throw new Error("Pakotettuja testejä on enemmän kuin valittu määrä.");
   }
 
   for (let tries = 1; ; tries += 1) {
@@ -451,7 +451,7 @@ function renderVerifierCard(verifier, criterion, symbol, index) {
   item.dataset.symbol = symbol;
   item.tabIndex = 0;
   item.role = "button";
-  item.setAttribute("aria-label", `Näytä tarkistimen ${String.fromCharCode(65 + index)} vaihtoehdot`);
+  item.setAttribute("aria-label", `Näytä testin ${verifier} vaihtoehdot`);
 
   const verifierNumber = document.createElement("span");
   verifierNumber.className = "verifier-number";
@@ -483,7 +483,7 @@ function renderVerifierCard(verifier, criterion, symbol, index) {
 function showCriterion(verifier, criterion, index) {
   const letter = String.fromCharCode(65 + index);
   els.status.replaceChildren(
-    document.createTextNode(`${letter} / Tarkistin ${verifier}, vaihtoehtoiset ehdot: `),
+    document.createTextNode(`${letter} / Testi ${verifier}, vaihtoehtoiset ehdot: `),
     ...renderCriterionOptions(verifier)
   );
 }
@@ -713,7 +713,7 @@ function renderForcedVerifiers() {
     chip.className = "verifier-chip";
     chip.type = "button";
     chip.textContent = String(verifier);
-    chip.setAttribute("aria-label", `Poista tarkistin ${verifier}`);
+    chip.setAttribute("aria-label", `Poista testi ${verifier}`);
     chip.addEventListener("click", () => {
       forcedVerifiers = forcedVerifiers.filter((item) => item !== verifier);
       updateVerifierSelect();

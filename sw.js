@@ -1,9 +1,9 @@
-const CACHE_NAME = "turing-challenge-v19";
+const CACHE_NAME = "turing-challenge-v20";
 const ASSETS = [
   "./",
   "./index.html",
   "./styles.css?v=16",
-  "./app.js?v=19",
+  "./app.js?v=20",
   "./generator-worker.js?v=1",
   "./manifest.webmanifest",
   "./icon.svg"
