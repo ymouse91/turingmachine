@@ -1,12 +1,12 @@
 "use strict";
 
-importScripts("../app.js?v=19");
+importScripts("./app.js?v=19");
 
 self.addEventListener("message", (event) => {
-  const { id, verifierCount, difficulty } = event.data;
+  const { id, nbVerif, difficulty, includeVerifiers } = event.data;
 
   try {
-    const game = self.TuringCore.generateGame(verifierCount, difficulty);
+    const game = self.TuringCore.generateGame(nbVerif, difficulty, includeVerifiers);
     self.postMessage({
       id,
       ok: true,

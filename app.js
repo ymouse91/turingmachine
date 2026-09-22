@@ -219,6 +219,8 @@ const els = typeof document === "undefined" ? {} : {
 
 let currentGame = null;
 let forcedVerifiers = [];
+let generatorWorker = null;
+let generatorRequestId = 0;
 
 function predicateFor(name) {
   const rule = name.replace(/^v\d+_/, "");
@@ -329,7 +331,7 @@ function generateGame(nbVerif, difficultyName, includeVerifiers = []) {
     throw new Error("Pakotettuja tarkistimia on enemmän kuin valittu määrä.");
   }
 
-  for (let tries = 1; tries <= 10000; tries += 1) {
+  for (let tries = 1; ; tries += 1) {
     const verifiers = [...baseVerifiers];
     let firstPick = true;
 
@@ -347,18 +349,16 @@ function generateGame(nbVerif, difficultyName, includeVerifiers = []) {
     }
 
     verifiers.sort((a, b) => a - b);
-    const solutions = findCachedSolutions(verifiers);
-    const codes = Object.keys(solutions);
+    const criteria = verifiers.map((verifier) => randomCheckableCriterion(PARSED_VERIFIERS[verifier]));
+    const code = testCriteria(criteria.map((criterion) => criterion.predicate));
 
-    if (codes.length === 1) {
-      const code = ALL_CODES.find((candidate) => candidate.value === codes[0]);
-      const criteriaOptions = solutions[codes[0]];
-      const criteria = criteriaOptions[randomInt(0, criteriaOptions.length - 1)];
-      return { tries, verifiers, criteria, code };
+    if (code) {
+      const solutions = findCachedSolutions(verifiers);
+      if (Object.keys(solutions).length === 1) {
+        return { tries, verifiers, criteria, code };
+      }
     }
   }
-
-  throw new Error("Sopivaa haastetta ei löytynyt 10000 yrityksellä.");
 }
 
 function findCachedSolutions(verifiers) {
@@ -404,7 +404,11 @@ function properSubsets(items) {
 
 function findAllSolutions(verifiers) {
   const solutions = {};
-  for (const criteria of product(verifiers.map((verifier) => PARSED_VERIFIERS[verifier]))) {
+  const checkableCriteria = verifiers.map((verifier) => {
+    return PARSED_VERIFIERS[verifier].filter((criterion) => criterion.checkcard !== null);
+  });
+
+  for (const criteria of product(checkableCriteria)) {
     const code = testCriteria(criteria.map((criterion) => criterion.predicate));
     if (code) {
       solutions[code.value] = solutions[code.value] || [];
@@ -615,6 +619,61 @@ function setBusy(isBusy) {
   const submit = els.form.querySelector("[type='submit']");
   submit.disabled = isBusy;
   submit.textContent = isBusy ? "Haetaan..." : "Luo haaste";
+  els.status.classList.toggle("busy", isBusy);
+}
+
+function generateGameInWorker(nbVerif, difficulty, includeVerifiers) {
+  if (!("Worker" in window)) {
+    return Promise.resolve(generateGame(nbVerif, difficulty, includeVerifiers));
+  }
+
+  if (!generatorWorker) {
+    generatorWorker = new Worker("./generator-worker.js?v=1");
+  }
+
+  const id = generatorRequestId + 1;
+  generatorRequestId = id;
+
+  return new Promise((resolve, reject) => {
+    const handleMessage = (event) => {
+      if (event.data.id !== id) return;
+      cleanup();
+
+      if (!event.data.ok) {
+        reject(new Error(event.data.error));
+        return;
+      }
+
+      resolve(hydrateGeneratedGame(event.data.game));
+    };
+
+    const handleError = () => {
+      cleanup();
+      reject(new Error("Tehtävän generointi epäonnistui."));
+    };
+
+    const cleanup = () => {
+      generatorWorker.removeEventListener("message", handleMessage);
+      generatorWorker.removeEventListener("error", handleError);
+    };
+
+    generatorWorker.addEventListener("message", handleMessage);
+    generatorWorker.addEventListener("error", handleError);
+    generatorWorker.postMessage({ id, nbVerif, difficulty, includeVerifiers });
+  });
+}
+
+function hydrateGeneratedGame(game) {
+  return {
+    ...game,
+    criteria: game.criteria.map((criterion, index) => {
+      const hydratedCriterion = PARSED_VERIFIERS[game.verifiers[index]].find((candidate) => {
+        return candidate.name === criterion.name && candidate.checkcard === criterion.checkcard;
+      });
+      if (!hydratedCriterion) throw new Error("Tehtävän tarkistimia ei voitu lukea.");
+      return hydratedCriterion;
+    })
+  };
 }
 
 function syncVerifierCount(value) {
@@ -698,25 +757,25 @@ if (els.form) {
     radio.addEventListener("change", updateVerifierSelect);
   });
 
-  els.form.addEventListener("submit", (event) => {
+  els.form.addEventListener("submit", async (event) => {
     event.preventDefault();
+    const formData = new FormData(els.form);
+    const nbVerif = Number(formData.get("nbVerif"));
+    const difficulty = formData.get("difficulty");
+    const includedVerifiers = [...forcedVerifiers];
+
     setBusy(true);
     els.status.textContent = "Haetaan haastetta...";
     els.solutionPanel.hidden = true;
 
-    window.setTimeout(() => {
-      try {
-        const formData = new FormData(els.form);
-        const nbVerif = Number(formData.get("nbVerif"));
-        const difficulty = formData.get("difficulty");
-        renderGame(generateGame(nbVerif, difficulty, forcedVerifiers), difficulty);
-      } catch (error) {
-        els.status.textContent = error.message;
-        els.showSolution.disabled = true;
-      } finally {
-        setBusy(false);
-      }
-    }, 20);
+    try {
+      renderGame(await generateGameInWorker(nbVerif, difficulty, includedVerifiers), difficulty);
+    } catch (error) {
+      els.status.textContent = error.message;
+      els.showSolution.disabled = true;
+    } finally {
+      setBusy(false);
+    }
   });
 
   if ("serviceWorker" in navigator) {

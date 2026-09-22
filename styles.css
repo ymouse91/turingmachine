@@ -507,6 +507,29 @@ legend,
   font-size: 0.9rem;
 }
 
+.status-line.busy {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+
+.status-line.busy::before {
+  content: "";
+  width: 18px;
+  height: 18px;
+  flex: 0 0 auto;
+  border: 3px solid rgba(31, 47, 70, 0.2);
+  border-top-color: var(--ink);
+  border-radius: 50%;
+  animation: status-spinner 0.75s linear infinite;
+}
+
+@keyframes status-spinner {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
 .color-token {
   display: inline-block;
   width: 0.92em;
